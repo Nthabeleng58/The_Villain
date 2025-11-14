@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to The Villain Food-App</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .onboarding-container {
+            text-align: center;
+            padding: 4rem 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            color: var(--primary-purple);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-gray);
+            margin-bottom: 3rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .feature-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary-purple);
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card h3 {
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card p {
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .btn-large {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary-large {
+            background: var(--primary-purple);
+            color: white;
+        }
+        
+        .btn-primary-large:hover {
+            background: #7a4da8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary-large {
+            background: transparent;
+            color: var(--text-light);
+            border: 2px solid var(--primary-purple);
+        }
+        
+        .btn-secondary-large:hover {
+            background: var(--primary-purple);
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="dark-theme">
+    <div class="onboarding-container">
+        <div class="hero-section">
+            <h1 class="hero-title">THE VILLAIN</h1>
+            <p class="hero-subtitle">Experience dark-themed culinary excellence with cutting-edge technology</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Lightning Fast</h3>
+                    <p>Get your favorite meals delivered in record time with our optimized delivery network</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Blockchain Secure</h3>
+                    <p>Every order is protected by blockchain technology ensuring complete transparency</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>AI Powered</h3>
+                    <p>Smart recommendations and predictions tailored to your taste preferences</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>Military Grade Security</h3>
+                    <p>Your data is protected with enterprise-level security and GDPR compliance</p>
+                </div>
+            </div>
+            
+            <div class="cta-buttons">
+                <a href="{{ url_for('auth.register') }}" class="btn-large btn-primary-large">
+                    <i class="fas fa-rocket"></i> Get Started
+                </a>
+                <a href="{{ url_for('auth.login') }}" class="btn-large btn-secondary-large">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </a>
+            </div>
+            
+            <div style="margin-top: 3rem; color: var(--text-gray);">
+                <p>Join thousands of satisfied customers experiencing the future of food delivery</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

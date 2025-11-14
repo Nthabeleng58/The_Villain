@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Security Configuration - Villain Food App{% endblock %}
+
+{% block content %}
+<div class="security-config" style="max-width: 1200px; margin: 0 auto;">
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--text-light); margin-bottom: 0.5rem;">Security Configuration & Compliance</h1>
+        <p style="color: var(--text-gray);">
+            Dedicated security domain: <a href="{{ security_domain }}" style="color: var(--primary-purple);" target="_blank">{{ security_domain }}</a>
+        </p>
+    </div>
+
+    <section style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 2rem;">
+        <div style="display:flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h2 style="color: var(--text-light); margin-bottom: 0.5rem;">Data Classification Register</h2>
+                <p style="color: var(--text-gray); margin: 0;">Spreadsheet source: {{ security_domain }}/classification.csv</p>
+            </div>
+            <div style="display:flex; gap:0.5rem;">
+                <a class="btn-login" href="{{ url_for('security.classification_json') }}">Download JSON</a>
+                <a class="btn-primary" href="{{ url_for('security.gdpr_json') }}">GDPR Export</a>
+            </div>
+        </div>
+        <div style="overflow-x:auto; margin-top:1.5rem;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                <thead>
+                    <tr style="text-align:left; color: var(--text-light); border-bottom: 1px solid #444;">
+                        <th style="padding:0.75rem;">Data Asset</th>
+                        <th style="padding:0.75rem;">Description</th>
+                        <th style="padding:0.75rem;">Classification</th>
+                        <th style="padding:0.75rem;">Storage / Ledger</th>
+                        <th style="padding:0.75rem;">Access Roles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data_classification %}
+                    <tr style="color: var(--text-gray); border-bottom: 1px solid #333;">
+                        <td style="padding:0.75rem; color: var(--text-light); font-weight:600;">{{ row['Data Asset'] }}</td>
+                        <td style="padding:0.75rem;">{{ row['Description'] }}</td>
+                        <td style="padding:0.75rem;">
+                            <span style="background: rgba(139,95,191,0.2); padding:0.25rem 0.6rem; border-radius: 999px; color: var(--text-light); text-transform: capitalize;">
+                                {{ row['Classification'] }}
+                            </span>
+                        </td>
+                        <td style="padding:0.75rem;">{{ row['Storage'] }}</td>
+                        <td style="padding:0.75rem;">{{ row['Access Roles'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section style="display:grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius);">
+            <h2 style="color: var(--text-light); margin-bottom: 1rem;">Role-Based Access Control</h2>
+            <div style="overflow-x:auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="text-align:left; color: var(--text-light); border-bottom: 1px solid #444;">
+                            <th style="padding:0.75rem;">Role</th>
+                            <th style="padding:0.75rem;">Granted Permissions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for role, permissions in access_matrix.items() %}
+                        <tr style="color: var(--text-gray); border-bottom: 1px solid #333;">
+                            <td style="padding:0.75rem; color: var(--text-light); text-transform: capitalize;">{{ role }}</td>
+                            <td style="padding:0.75rem;">
+                                {% for permission in permissions %}
+                                <span style="display:inline-block; background: rgba(255,255,255,0.05); margin:0 0.25rem 0.25rem 0; padding:0.25rem 0.5rem; border-radius: 6px;">
+                                    {{ permission }}
+                                </span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius);">
+            <h2 style="color: var(--text-light); margin-bottom: 1rem;">Security Checklist</h2>
+            <ul style="color: var(--text-gray); line-height:1.8; padding-left:1rem;">
+                <li>Multi-factor admin access enforced</li>
+                <li>BCrypt password hashing with salt</li>
+                <li>Blockchain ledger ensures order integrity</li>
+                <li>Daily database + ledger backups</li>
+                <li>Separate security domain for configuration</li>
+            </ul>
+        </div>
+    </section>
+
+    <section style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius);">
+        <div style="display:flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom:1rem;">
+            <div>
+                <h2 style="color: var(--text-light); margin-bottom: 0.25rem;">GDPR Compliance Statement</h2>
+                <p style="color: var(--text-gray); margin:0;">Spreadsheet driven evidence for Articles 12-23</p>
+            </div>
+            <span style="background: rgba(76,175,80,0.2); color:#4CAF50; padding:0.5rem 1rem; border-radius:999px; align-self:flex-start;">
+                4/5 controls compliant
+            </span>
+        </div>
+        <div style="overflow-x:auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="text-align:left; color: var(--text-light); border-bottom: 1px solid #444;">
+                        <th style="padding:0.75rem;">Control</th>
+                        <th style="padding:0.75rem;">Evidence / Module</th>
+                        <th style="padding:0.75rem;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in gdpr_controls %}
+                    <tr style="color: var(--text-gray); border-bottom: 1px solid #333;">
+                        <td style="padding:0.75rem; color: var(--text-light); font-weight:600;">{{ row['Control'] }}</td>
+                        <td style="padding:0.75rem;">{{ row['Evidence'] }}</td>
+                        <td style="padding:0.75rem;">
+                            <span style="background: {% if 'Partial' in row['Status'] %}rgba(255,167,38,0.2){% else %}rgba(76,175,80,0.2){% endif %};
+                                         color: {% if 'Partial' in row['Status'] %}#FFA726{% else %}#4CAF50{% endif %};
+                                         padding:0.25rem 0.6rem; border-radius:999px;">
+                                {{ row['Status'] }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}
+

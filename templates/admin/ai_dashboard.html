@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}AI Control Room - Villain Food App{% endblock %}
+
+{% block content %}
+<div class="ai-dashboard" style="max-width: 1300px; margin: 0 auto;">
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--text-light); margin-bottom: 0.5rem;">AI Control Room</h1>
+        <p style="color: var(--text-gray);">Sales forecasts, customer engagement, and model performance insights</p>
+    </div>
+
+    <section class="stats-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="stat-card" style="background: var(--card-bg); padding:1.25rem; border-radius: var(--border-radius);">
+            <p style="color:var(--text-gray); margin-bottom:0.25rem;">Model Accuracy</p>
+            <h2 style="color:var(--text-light); margin:0;">{{ '%.1f'|format(accuracy_analysis.accuracy * 100) if accuracy_analysis.accuracy else '--' }}%</h2>
+            <small style="color:var(--text-gray);">Random Forest regression</small>
+        </div>
+        <div class="stat-card" style="background: var(--card-bg); padding:1.25rem; border-radius: var(--border-radius);">
+            <p style="color:var(--text-gray); margin-bottom:0.25rem;">Mean Absolute Error</p>
+            <h2 style="color:var(--text-light); margin:0;">M{{ '%.2f'|format(accuracy_analysis.mae or 0) }}</h2>
+            <small style="color:var(--text-gray);">Lower is better</small>
+        </div>
+        <div class="stat-card" style="background: var(--card-bg); padding:1.25rem; border-radius: var(--border-radius);">
+            <p style="color:var(--text-gray); margin-bottom:0.25rem;">Saturation Point</p>
+            <h2 style="color:var(--text-light); margin:0;">{{ accuracy_analysis.saturation_point or 'N/A' }} rows</h2>
+            <small style="color:var(--text-gray);">Data volume where returns diminish</small>
+        </div>
+        <div class="stat-card" style="background: var(--card-bg); padding:1.25rem; border-radius: var(--border-radius);">
+            <p style="color:var(--text-gray); margin-bottom:0.25rem;">Training Samples</p>
+            <h2 style="color:var(--text-light); margin:0;">{{ accuracy_analysis.samples_used or 0 }}</h2>
+            <small style="color:var(--text-gray);">Combined datasets</small>
+        </div>
+    </section>
+
+    <section class="charts-grid">
+        <div class="chart-container">
+            <h3 style="color: var(--text-light); margin-bottom: 1rem;">Sales Trend</h3>
+            <div>{{ trend_chart|safe }}</div>
+        </div>
+        <div class="chart-container">
+            <h3 style="color: var(--text-light); margin-bottom: 1rem;">Cuisine Performance</h3>
+            <div>{{ cuisine_chart|safe }}</div>
+        </div>
+        <div class="chart-container">
+            <h3 style="color: var(--text-light); margin-bottom: 1rem;">Day-of-week Heatmap</h3>
+            <div>{{ dow_chart|safe }}</div>
+        </div>
+    </section>
+
+    <section style="display:grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top:2rem;">
+        <div style="background: var(--card-bg); padding:1.5rem; border-radius: var(--border-radius);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="color: var(--text-light); margin:0;">Top Recommended Items</h3>
+                <span style="color: var(--text-gray); font-size:0.85rem;">Based on blockchain-backed orders</span>
+            </div>
+            <div class="items-grid">
+                {% if popular_items %}
+                    {% for item in popular_items %}
+                    <div class="item-card">
+                        <h4>{{ item.name }}</h4>
+                        <p>{{ item.category }}</p>
+                        <p>Orders: {{ item.order_count }}</p>
+                        <p>Avg Price: M{{ '%.2f'|format(item.price) }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p style="color: var(--text-gray);">No delivered orders yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div style="background: var(--card-bg); padding:1.5rem; border-radius: var(--border-radius);">
+            <h3 style="color: var(--text-light); margin-bottom:1rem;">Model Notes</h3>
+            <ul style="color: var(--text-gray); line-height:1.8; padding-left:1.2rem;">
+                <li>Dataset blends production DB + synthetic Villain dataset.</li>
+                <li>Features include cuisine encoding, day-of-week, and seasonality.</li>
+                <li>Accuracy recalculated per deployment.</li>
+                <li>Saturation level drives when to switch to gradient boosting.</li>
+            </ul>
+            <a class="btn-primary" style="margin-top:1rem; display:inline-block;" href="{{ url_for('ai.api_model_metrics') }}">
+                <i class="fas fa-code"></i> Fetch Metrics API
+            </a>
+        </div>
+    </section>
+</div>
+{% endblock %}
+

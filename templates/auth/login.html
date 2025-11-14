@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Login - The Villain Food-App{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h2 style="color: var(--text-light); margin-bottom: 0.5rem;">Welcome Back</h2>
+        <p style="color: var(--text-gray);">Sign in to your Villain account</p>
+    </div>
+    
+    <form method="POST" action="{{ url_for('auth.login') }}">
+        <div class="form-group">
+            <label class="form-label" for="email">
+                <i class="fas fa-envelope"></i> Email Address
+            </label>
+            <input type="email" class="form-input" id="email" name="email" required 
+                   placeholder="Enter your email">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="password">
+                <i class="fas fa-lock"></i> Password
+            </label>
+            <input type="password" class="form-input" id="password" name="password" required 
+                   placeholder="Enter your password">
+        </div>
+        
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem;">
+            <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+    </form>
+    
+    <div style="text-align: center; margin-top: 1.5rem; color: var(--text-gray);">
+        <p>Don't have an account? 
+            <a href="{{ url_for('auth.register') }}" style="color: var(--primary-purple); font-weight: 500;">
+                Create one here
+            </a>
+        </p>
+    </div>
+</div>
+
+<style>
+    .form-container {
+        max-width: 400px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+    }
+    
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+</style>
+{% endblock %}

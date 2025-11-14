@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Register - The Villain Food-App{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h2 style="color: var(--text-light); margin-bottom: 0.5rem;">Join The Villain</h2>
+        <p style="color: var(--text-gray);">Create your account to get started</p>
+    </div>
+    
+    <form method="POST" action="{{ url_for('auth.register') }}">
+        <div class="form-group">
+            <label class="form-label" for="name">
+                <i class="fas fa-user"></i> Full Name
+            </label>
+            <input type="text" class="form-input" id="name" name="name" required 
+                   placeholder="Enter your full name">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="email">
+                <i class="fas fa-envelope"></i> Email Address
+            </label>
+            <input type="email" class="form-input" id="email" name="email" required 
+                   placeholder="Enter your email">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="phone">
+                <i class="fas fa-phone"></i> Phone Number (Optional)
+            </label>
+            <input type="tel" class="form-input" id="phone" name="phone" 
+                   placeholder="Enter your phone number">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="password">
+                <i class="fas fa-lock"></i> Password
+            </label>
+            <input type="password" class="form-input" id="password" name="password" required 
+                   placeholder="Create a password">
+            <div style="font-size: 0.8rem; color: var(--text-gray); margin-top: 0.25rem;">
+                Must be at least 8 characters with uppercase, lowercase, and numbers
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="confirm_password">
+                <i class="fas fa-lock"></i> Confirm Password
+            </label>
+            <input type="password" class="form-input" id="confirm_password" name="confirm_password" required 
+                   placeholder="Confirm your password">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="role">
+                <i class="fas fa-users"></i> Account Type
+            </label>
+            <select class="form-input" id="role" name="role" required>
+                <option value="">Select account type</option>
+                <option value="customer">Customer - Order food</option>
+                <option value="restaurant">Restaurant Owner - Manage restaurant</option>
+                <option value="admin">Admin (project reviewer)</option>
+            </select>
+        </div>
+        
+        <div style="margin: 1.5rem 0; padding: 1rem; background: rgba(139, 95, 191, 0.1); border-radius: var(--border-radius);">
+            <label style="display: flex; align-items: flex-start; gap: 0.5rem; color: var(--text-light);">
+                <input type="checkbox" required style="margin-top: 0.25rem;">
+                <span>I agree to the <a href="#" style="color: var(--primary-purple);">Terms of Service</a> and <a href="#" style="color: var(--primary-purple);">Privacy Policy</a></span>
+            </label>
+        </div>
+        
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem;">
+            <i class="fas fa-user-plus"></i> Create Account
+        </button>
+    </form>
+    
+    <div style="text-align: center; margin-top: 1.5rem; color: var(--text-gray);">
+        <p>Already have an account? 
+            <a href="{{ url_for('auth.login') }}" style="color: var(--primary-purple); font-weight: 500;">
+                Sign in here
+            </a>
+        </p>
+    </div>
+</div>
+
+<style>
+    .form-container {
+        max-width: 450px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+    }
+</style>
+{% endblock %}

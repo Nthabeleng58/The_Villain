@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - The Villain Food-App{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard" style="max-width: 1400px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--text-light); margin-bottom: 0.5rem;">Admin Dashboard</h1>
+        <p style="color: var(--text-gray);">System overview and management</p>
+    </div>
+
+    <!-- System Stats -->
+    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="stat-card" style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); text-align: center;">
+            <div style="font-size: 2rem; color: var(--primary-purple); margin-bottom: 0.5rem;">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3 style="color: var(--text-light); margin-bottom: 0.5rem;">Total Users</h3>
+            <p style="color: var(--text-gray); font-size: 1.5rem; font-weight: bold;">{{ total_users }}</p>
+            <p style="color: #4CAF50; font-size: 0.9rem; margin: 0;">
+                <i class="fas fa-arrow-up"></i> 12 new today
+            </p>
+        </div>
+        
+        <div class="stat-card" style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); text-align: center;">
+            <div style="font-size: 2rem; color: var(--primary-purple); margin-bottom: 0.5rem;">
+                <i class="fas fa-store"></i>
+            </div>
+            <h3 style="color: var(--text-light); margin-bottom: 0.5rem;">Restaurants</h3>
+            <p style="color: var(--text-gray); font-size: 1.5rem; font-weight: bold;">{{ total_restaurants }}</p>
+            <p style="color: #FFA500; font-size: 0.9rem; margin: 0;">
+                3 pending approval
+            </p>
+        </div>
+        
+        <div class="stat-card" style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); text-align: center;">
+            <div style="font-size: 2rem; color: var(--primary-purple); margin-bottom: 0.5rem;">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h3 style="color: var(--text-light); margin-bottom: 0.5rem;">Total Orders</h3>
+            <p style="color: var(--text-gray); font-size: 1.5rem; font-weight: bold;">{{ total_orders }}</p>
+            <p style="color: #4CAF50; font-size: 0.9rem; margin: 0;">
+                <i class="fas fa-arrow-up"></i> 8% from yesterday
+            </p>
+        </div>
+        
+        <div class="stat-card" style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); text-align: center;">
+            <div style="font-size: 2rem; color: var(--primary-purple); margin-bottom: 0.5rem;">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <h3 style="color: var(--text-light); margin-bottom: 0.5rem;">Total Revenue</h3>
+            <p style="color: var(--text-gray); font-size: 1.5rem; font-weight: bold;">M{{ "%.2f"|format(total_revenue) }}</p>
+            <p style="color: #4CAF50; font-size: 0.9rem; margin: 0;">
+                <i class="fas fa-arrow-up"></i> 15% growth
+            </p>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Recent Activity -->
+            <div style="background: var(--card-bg); border-radius: var(--border-radius); margin-bottom: 1.5rem;">
+                <div style="padding: 1.5rem; border-bottom: 1px solid #444;">
+                    <h2 style="color: var(--text-light); margin: 0;">Recent System Activity</h2>
+                </div>
+                
+                <div class="activity-list">
+                    {% set activities = [
+                        {'type': 'user', 'action': 'New user registration', 'details': 'john.doe@example.com', 'time': '2 minutes ago'},
+                        {'type': 'order', 'action': 'Order completed', 'details': 'Order #1042 - M45.99', 'time': '5 minutes ago'},
+                        {'type': 'restaurant', 'action': 'Restaurant application', 'details': 'Pizza Palace pending review', 'time': '12 minutes ago'},
+                        {'type': 'system', 'action': 'Blockchain verification', 'details': 'Integrity check completed', 'time': '18 minutes ago'},
+                        {'type': 'user', 'action': 'Profile update', 'details': 'Sarah Johnson updated profile', 'time': '25 minutes ago'},
+                        {'type': 'order', 'action': 'Order cancellation', 'details': 'Order #1038 cancelled', 'time': '35 minutes ago'}
+                    ] %}
+                    
+                    {% for activity in activities %}
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid #444; display: flex; align-items: center; gap: 1rem;">
+                        <div style="width: 8px; height: 8px; background: 
+                            {% if activity.type == 'user' %}var(--primary-purple)
+                            {% elif activity.type == 'order' %}#4CAF50
+                            {% elif activity.type == 'restaurant' %}#FFA500
+                            {% else %}#2196F3{% endif %}; 
+                            border-radius: 50%; flex-shrink: 0;">
+                        </div>
+                        
+                        <div style="flex: 1;">
+                            <div style="color: var(--text-light); font-weight: 500; margin-bottom: 0.25rem;">
+                                {{ activity.action }}
+                            </div>
+                            <div style="color: var(--text-gray); font-size: 0.9rem;">
+                                {{ activity.details }}
+                            </div>
+                        </div>
+                        
+                        <div style="color: var(--text-gray); font-size: 0.8rem;">
+                            {{ activity.time }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div style="background: var(--card-bg); border-radius: var(--border-radius);">
+                <div style="padding: 1.5rem; border-bottom: 1px solid #444;">
+                    <h2 style="color: var(--text-light); margin: 0;">Quick Actions</h2>
+                </div>
+                
+                <div style="padding: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <a href="{{ url_for('admin.user_management') }}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3>Manage Users</h3>
+                            <p>View and manage all users</p>
+                        </a>
+                        
+                        <a href="{{ url_for('admin.restaurant_management') }}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <h3>Restaurants</h3>
+                            <p>Approve and manage restaurants</p>
+                        </a>
+                        
+                        <a href="{{ url_for('admin.ai_dashboard') }}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <h3>AI Analytics</h3>
+                            <p>View system analytics</p>
+                        </a>
+                        
+                        <a href="{{ url_for('admin.security_config') }}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h3>Security</h3>
+                            <p>Configure system security</p>
+                        </a>
+                        
+                        <a href="{{ url_for('admin.menu_management') }}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <h3>Menu Management</h3>
+                            <p>Add and manage menu items</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- System Health -->
+            <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 1rem;">
+                <h3 style="color: var(--text-light); margin-bottom: 1rem;">System Health</h3>
+                
+                <div style="color: var(--text-gray);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span>Database:</span>
+                        <span style="color: #4CAF50;">Healthy</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span>Blockchain:</span>
+                        <span style="color: #4CAF50;">Verified</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span>AI Models:</span>
+                        <span style="color: #4CAF50;">Running</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Uptime:</span>
+                        <span style="color: var(--text-light);">99.8%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Actions -->
+            <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius);">
+                <h3 style="color: var(--text-light); margin-bottom: 1rem;">Pending Actions</h3>
+                
+                <div style="color: var(--text-gray);">
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span>Restaurant Approvals:</span>
+                            <span style="color: var(--text-light);">3</span>
+                        </div>
+                        <a href="{{ url_for('admin.restaurant_management') }}" style="color: var(--primary-purple); font-size: 0.9rem;">
+                            Review now
+                        </a>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span>User Reports:</span>
+                            <span style="color: var(--text-light);">2</span>
+                        </div>
+                        <a href="{{ url_for('admin.user_management') }}" style="color: var(--primary-purple); font-size: 0.9rem;">
+                            View reports
+                        </a>
+                    </div>
+                    
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span>Blockchain Audit:</span>
+                            <span style="color: var(--text-light);">Due</span>
+                        </div>
+                        <a href="{{ url_for('admin.blockchain_verify') }}" style="color: var(--primary-purple); font-size: 0.9rem;">
+                            Run audit
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .action-card {
+        background: rgba(139, 95, 191, 0.1);
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        color: var(--text-light);
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    
+    .action-card:hover {
+        background: rgba(139, 95, 191, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .action-icon {
+        font-size: 2rem;
+        color: var(--primary-purple);
+        margin-bottom: 1rem;
+    }
+    
+    .action-card h3 {
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .action-card p {
+        color: var(--text-gray);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+    
+    @media (max-width: 768px) {
+        .admin-dashboard > div:nth-child(3) {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

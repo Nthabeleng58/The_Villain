@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Restaurant Management - Villain Food App{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div class="page-header" style="margin-bottom: 1.5rem;">
+        <h1 style="color: var(--text-light); margin:0;">Restaurant Registry</h1>
+        <p style="color: var(--text-gray); margin:0;">Monitor onboarding, approvals, and blockchain-linked revenue.</p>
+    </div>
+
+    <div style="background: var(--card-bg); border-radius: var(--border-radius); overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.95rem;">
+            <thead>
+                <tr style="text-align:left; color: var(--text-light); border-bottom:1px solid #444;">
+                    <th style="padding:0.75rem;">Restaurant</th>
+                    <th style="padding:0.75rem;">Owner</th>
+                    <th style="padding:0.75rem;">Cuisine</th>
+                    <th style="padding:0.75rem;">Status</th>
+                    <th style="padding:0.75rem;">Rating</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if restaurants %}
+                    {% for restaurant in restaurants %}
+                    <tr style="color: var(--text-gray); border-bottom:1px solid #333;">
+                        <td style="padding:0.75rem; color:var(--text-light); font-weight:600;">{{ restaurant.name }}</td>
+                        <td style="padding:0.75rem;">{{ restaurant.owner_name }}</td>
+                        <td style="padding:0.75rem;">{{ restaurant.cuisine_type }}</td>
+                        <td style="padding:0.75rem;">
+                            <span style="background: {% if restaurant.is_approved %}rgba(76,175,80,0.2){% else %}rgba(255,167,38,0.2){% endif %};
+                                         color: {% if restaurant.is_approved %}#4CAF50{% else %}#FFA726{% endif %};
+                                         padding:0.25rem 0.6rem; border-radius:999px; text-transform:capitalize;">
+                                {{ 'approved' if restaurant.is_approved else 'pending' }}
+                            </span>
+                        </td>
+                        <td style="padding:0.75rem;">{{ '%.1f'|format(restaurant.rating or 0) }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="5" style="padding:1rem; color:var(--text-gray); text-align:center;">No restaurants onboarded yet.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

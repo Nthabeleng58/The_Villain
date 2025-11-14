@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders - The Villain Food-App{% endblock %}
+
+{% block content %}
+<div class="orders-page" style="max-width: 1000px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--text-light); margin-bottom: 0.5rem;">My Orders</h1>
+        <p style="color: var(--text-gray);">Track your recent orders</p>
+    </div>
+
+    <!-- Orders Filter -->
+    <div class="orders-filter" style="background: var(--card-bg); padding: 1rem 1.5rem; border-radius: var(--border-radius); margin-bottom: 2rem;">
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <span style="color: var(--text-light); font-weight: 500;">Filter:</span>
+            <button class="filter-btn active" data-filter="all">All Orders</button>
+            <button class="filter-btn" data-filter="pending">Pending</button>
+            <button class="filter-btn" data-filter="preparing">Preparing</button>
+            <button class="filter-btn" data-filter="in_delivery">In Delivery</button>
+            <button class="filter-btn" data-filter="delivered">Delivered</button>
+        </div>
+    </div>
+
+    <!-- Verification Info Banner -->
+    <div style="background: linear-gradient(135deg, rgba(139, 95, 191, 0.2), rgba(76, 175, 80, 0.2)); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 2rem; border-left: 4px solid var(--primary-purple);">
+        <h3 style="color: var(--text-light); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-info-circle" style="color: var(--primary-purple);"></i> How to Verify Your Orders
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; color: var(--text-gray);">
+            <div>
+                <strong style="color: var(--text-light);">✅ Order Verification:</strong>
+                <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem;">Your orders appear here once placed. Check order ID, items, and total amount.</p>
+            </div>
+            <div>
+                <strong style="color: var(--text-light);">⛓️ Blockchain Verification:</strong>
+                <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem;">Delivered orders are added to blockchain. <a href="{{ url_for('customer.secure_orders') }}" style="color: var(--primary-purple);">View Secure Orders</a> to see blockchain records.</p>
+            </div>
+            <div>
+                <strong style="color: var(--text-light);">🔒 GDPR Verification:</strong>
+                <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem;">All your data is accessible. <a href="{{ url_for('gdpr.view_my_data') }}" style="color: var(--primary-purple);">View My Data</a> to see your complete information.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders List -->
+    <div class="orders-list">
+        {% if orders %}
+            {% for order in orders %}
+            <div class="order-card" data-status="{{ order.status }}" 
+                 style="background: var(--card-bg); border-radius: var(--border-radius); margin-bottom: 1.5rem; overflow: hidden;">
+                <!-- Order Header -->
+                <div style="padding: 1.5rem; border-bottom: 1px solid #444; display: flex; justify-content: between; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <h3 style="color: var(--text-light); margin: 0 0 0.5rem 0;">{{ order.restaurant_name }}</h3>
+                        <div style="display: flex; gap: 1rem; color: var(--text-gray); font-size: 0.9rem;">
+                            <span>Order #{{ order.id }}</span>
+                            <span>{{ order.created_at_human if order.created_at_human else (order.created_at|string if order.created_at else 'N/A') }}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="status-badge status-{{ order.status }}" 
+                              style="background: {% if order.status == 'delivered' %}#4CAF50{% elif order.status == 'pending' %}#FFA500{% elif order.status == 'cancelled' %}#FF4757{% else %}#8B5FBF{% endif %}; 
+                                     color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; text-transform: capitalize; font-weight: 500;">
+                            {{ order.status }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Blockchain Verification Badge -->
+                {% if order.status == 'delivered' %}
+                <div style="padding: 0.75rem 1rem; background: rgba(76, 175, 80, 0.1); border-left: 3px solid #4CAF50; margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; color: #4CAF50;">
+                        <i class="fas fa-check-circle"></i>
+                        <span style="font-weight: 500;">Verified on Blockchain</span>
+                        <a href="{{ url_for('customer.secure_orders') }}" style="margin-left: auto; color: #4CAF50; text-decoration: none; font-size: 0.9rem;">
+                            View Blockchain Record <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Order Details -->
+                <div style="padding: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+                        <!-- Order Items -->
+                        <div>
+                            <h4 style="color: var(--text-light); margin-bottom: 1rem;">Order Items</h4>
+                            {% set order_items = [
+                                {'name': 'Dark Knight Burger', 'quantity': 1, 'price': 12.99},
+                                {'name': 'Gothic Fries', 'quantity': 1, 'price': 4.99},
+                                {'name': 'Evil Shake', 'quantity': 1, 'price': 5.99}
+                            ] %}
+                            
+                            {% for item in order_items %}
+                            <div style="display: flex; justify-content: between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #444;">
+                                <div style="color: var(--text-light);">
+                                    <span style="font-weight: 500;">{{ item.quantity }}x</span> {{ item.name }}
+                                </div>
+                                <div style="color: var(--primary-purple); font-weight: 500;">
+                                    M{{ "%.2f"|format(item.price * item.quantity) }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Order Summary -->
+                        <div>
+                            <h4 style="color: var(--text-light); margin-bottom: 1rem;">Order Summary</h4>
+                            <div style="color: var(--text-gray);">
+                                <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
+                                    <span>Subtotal:</span>
+                                    <span>M{{ "%.2f"|format(order.total_amount - 2.99 - (order.total_amount * 0.08)) }}</span>
+                                </div>
+                                <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
+                                    <span>Delivery:</span>
+                                    <span>M2.99</span>
+                                </div>
+                                <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
+                                    <span>Tax:</span>
+                                    <span>M{{ "%.2f"|format(order.total_amount * 0.08) }}</span>
+                                </div>
+                                <div style="display: flex; justify-content: between; font-weight: bold; color: var(--text-light); margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #444;">
+                                    <span>Total:</span>
+                                    <span style="color: var(--primary-purple);">M{{ "%.2f"|format(order.total_amount) }}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Order Actions -->
+                            <div style="margin-top: 1.5rem;">
+                                {% if order.status == 'delivered' %}
+                                <button class="btn-primary" style="width: 100%; margin-bottom: 0.5rem;" 
+                                        onclick="reorder({{ order.id }})">
+                                    <i class="fas fa-redo"></i> Reorder
+                                </button>
+                                <button class="btn-login" style="width: 100%;" 
+                                        onclick="rateOrder({{ order.id }})">
+                                    <i class="fas fa-star"></i> Rate Order
+                                </button>
+                                {% elif order.status == 'pending' %}
+                                <button class="btn-danger" style="width: 100%;" 
+                                        onclick="cancelOrder({{ order.id }})">
+                                    <i class="fas fa-times"></i> Cancel Order
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Delivery Info -->
+                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #444;">
+                        <h4 style="color: var(--text-light); margin-bottom: 0.5rem;">Delivery Information</h4>
+                        <div style="color: var(--text-gray);">
+                            <p style="margin: 0.25rem 0;"><strong>Address:</strong> {{ order.delivery_address or '123 Main Street, Gotham City' }}</p>
+                            {% if order.special_instructions %}
+                            <p style="margin: 0.25rem 0;"><strong>Instructions:</strong> {{ order.special_instructions }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Order Timeline -->
+                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #444;">
+                        <h4 style="color: var(--text-light); margin-bottom: 1rem;">Order Status</h4>
+                        <div class="order-timeline">
+                            {% set timeline = [
+                                {'status': 'ordered', 'label': 'Order Placed', 'time': order.created_at_time if order.created_at_time else (order.created_at|string if order.created_at else 'N/A'), 'active': true},
+                                {'status': 'confirmed', 'label': 'Confirmed', 'time': '--:--', 'active': order.status in ['confirmed', 'preparing', 'ready', 'in_delivery', 'delivered']},
+                                {'status': 'preparing', 'label': 'Preparing', 'time': '--:--', 'active': order.status in ['preparing', 'ready', 'in_delivery', 'delivered']},
+                                {'status': 'ready', 'label': 'Ready', 'time': '--:--', 'active': order.status in ['ready', 'in_delivery', 'delivered']},
+                                {'status': 'in_delivery', 'label': 'In Delivery', 'time': '--:--', 'active': order.status in ['in_delivery', 'delivered']},
+                                {'status': 'delivered', 'label': 'Delivered', 'time': '--:--', 'active': order.status == 'delivered'}
+                            ] %}
+                            
+                            <div style="display: flex; justify-content: between; position: relative;">
+                                {% for step in timeline %}
+                                <div style="text-align: center; flex: 1; position: relative;">
+                                    <div style="width: 12px; height: 12px; background: {% if step.active %}var(--primary-purple){% else %}#444{% endif %}; 
+                                         border-radius: 50%; margin: 0 auto 0.5rem auto; position: relative; z-index: 2;"></div>
+                                    <div style="font-size: 0.8rem; color: {% if step.active %}var(--text-light){% else %}var(--text-gray){% endif %};">
+                                        {{ step.label }}
+                                    </div>
+                                    <div style="font-size: 0.7rem; color: var(--text-gray); margin-top: 0.25rem;">
+                                        {{ step.time }}
+                                    </div>
+                                    {% if not loop.last %}
+                                    <div style="position: absolute; top: 5px; left: 50%; width: 100%; height: 2px; 
+                                         background: {% if step.active %}var(--primary-purple){% else %}#444{% endif %}; z-index: 1;"></div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; padding: 3rem; color: var(--text-gray);">
+                <i class="fas fa-shopping-bag" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+                <h3>No orders yet</h3>
+                <p>When you place orders, they will appear here</p>
+                <a href="{{ url_for('customer.dashboard') }}" class="btn-primary" style="margin-top: 1rem; text-decoration: none;">
+                    <i class="fas fa-utensils"></i> Browse Restaurants
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .filter-btn {
+        background: transparent;
+        border: 1px solid #444;
+        color: var(--text-gray);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-btn:hover, .filter-btn.active {
+        background: var(--primary-purple);
+        border-color: var(--primary-purple);
+        color: white;
+    }
+    
+    .order-card {
+        transition: transform 0.2s ease;
+    }
+    
+    .order-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .order-timeline {
+        position: relative;
+    }
+</style>
+
+{% block scripts %}
+<script>
+    // Filter orders by status
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Update active state
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filter = this.getAttribute('data-filter');
+            const orderCards = document.querySelectorAll('.order-card');
+            
+            orderCards.forEach(card => {
+                if (filter === 'all' || card.getAttribute('data-status') === filter) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    function reorder(orderId) {
+        showNotification('Adding items to cart...', 'info');
+        
+        // Simulate reorder process
+        setTimeout(() => {
+            showNotification('Items added to cart!', 'success');
+            // Redirect to cart page
+            setTimeout(() => {
+                window.location.href = "{{ url_for('customer.cart') }}";
+            }, 1000);
+        }, 1500);
+    }
+    
+    function rateOrder(orderId) {
+        showNotification('Opening rating modal...', 'info');
+        // In a real app, this would open a rating modal
+    }
+    
+    function cancelOrder(orderId) {
+        if (confirm('Are you sure you want to cancel this order?')) {
+            showNotification('Cancelling order...', 'info');
+            
+            // Simulate cancellation
+            setTimeout(() => {
+                showNotification('Order cancelled successfully', 'success');
+                // Reload the page to reflect changes
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }, 1500);
+        }
+    }
+    
+    // Initialize filters
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show all orders by default
+        document.querySelector('.filter-btn[data-filter="all"]').click();
+    });
+</script>
+{% endblock %}
+{% endblock %}

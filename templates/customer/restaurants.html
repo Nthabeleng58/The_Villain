@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Restaurants - The Villain Food-App{% endblock %}
+
+{% block content %}
+<div class="restaurants-page">
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--text-light); margin-bottom: 0.5rem;">Discover Restaurants</h1>
+        <p style="color: var(--text-gray);">Explore all available restaurants and cuisines</p>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="filters-section" style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: end;">
+            <div>
+                <label class="form-label">Search Restaurants</label>
+                <input type="text" class="search-input" placeholder="Search by name, cuisine, or dish..." 
+                       style="width: 100%;">
+            </div>
+            
+            <div>
+                <label class="form-label">Cuisine</label>
+                <select class="form-input" id="cuisine-filter">
+                    <option value="">All Cuisines</option>
+                    <option value="Burger">Burger</option>
+                    <option value="Asian">Asian</option>
+                    <option value="Vegan">Vegan</option>
+                    <option value="Mexican">Mexican</option>
+                    <option value="Italian">Italian</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="form-label">Sort By</label>
+                <select class="form-input" id="sort-filter">
+                    <option value="rating">Highest Rated</option>
+                    <option value="delivery">Fastest Delivery</option>
+                    <option value="name">Name A-Z</option>
+                </select>
+            </div>
+            
+            <button class="btn-primary" onclick="applyFilters()" style="white-space: nowrap;">
+                <i class="fas fa-filter"></i> Apply
+            </button>
+        </div>
+    </div>
+
+    <!-- Restaurants Grid -->
+    <div class="restaurants-container">
+        <div class="restaurant-grid">
+            {% for restaurant in all_restaurants %}
+            <div class="restaurant-card" data-cuisine="{{ restaurant.cuisine_type }}" data-rating="{{ restaurant.rating }}">
+                <div class="restaurant-image-container">
+                    <img src="{{ restaurant.image_url or url_for('static', filename='images/restaurant-placeholder.svg') }}"
+                         alt="{{ restaurant.name }}" class="restaurant-image">
+                    {% if restaurant.is_featured %}
+                    <div class="featured-badge">Featured</div>
+                    {% endif %}
+                </div>
+                <div class="restaurant-info">
+                    <h3 class="restaurant-name">{{ restaurant.name }}</h3>
+                    <p class="restaurant-cuisine">{{ restaurant.cuisine_type }}</p>
+                    <p class="restaurant-description">{{ restaurant.description[:100] }}{% if restaurant.description|length > 100 %}...{% endif %}</p>
+                    
+                    <div class="restaurant-meta">
+                        <span class="restaurant-rating">
+                            <i class="fas fa-star"></i> {{ restaurant.rating or '4.0' }}
+                        </span>
+                        <span class="delivery-time">{{ restaurant.delivery_time or '30-40 min' }}</span>
+                    </div>
+                    
+                    <div class="restaurant-actions" style="margin-top: 1rem;">
+                        <button class="btn-primary" onclick="location.href='{{ url_for('customer.view_restaurant', restaurant_id=restaurant.id) }}'" 
+                                style="width: 100%;">
+                            <i class="fas fa-eye"></i> View Menu
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-restaurants" style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-gray);">
+                <i class="fas fa-store-slash" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+                <h3>No restaurants available</h3>
+                <p>Check back later for new restaurant additions</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Load More Section -->
+    {% if all_restaurants|length >= 12 %}
+    <div style="text-align: center; margin-top: 3rem;">
+        <button class="btn-primary" onclick="loadMoreRestaurants()">
+            <i class="fas fa-plus"></i> Load More Restaurants
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .restaurant-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .restaurant-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+    
+    .restaurant-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .restaurant-info {
+        padding: 1.5rem;
+    }
+    
+    .restaurant-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-light);
+    }
+    
+    .restaurant-cuisine {
+        color: var(--primary-purple);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .restaurant-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+    }
+    
+    .restaurant-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        color: #FFD700;
+    }
+    
+    .delivery-time {
+        color: var(--text-gray);
+        font-size: 0.9rem;
+    }
+</style>
+
+{% block scripts %}
+<script>
+    function applyFilters() {
+        const cuisineFilter = document.getElementById('cuisine-filter').value;
+        const sortFilter = document.getElementById('sort-filter').value;
+        const searchTerm = document.querySelector('.search-input').value.toLowerCase();
+        
+        const restaurantCards = document.querySelectorAll('.restaurant-card');
+        
+        restaurantCards.forEach(card => {
+            const cuisine = card.getAttribute('data-cuisine');
+            const name = card.querySelector('.restaurant-name').textContent.toLowerCase();
+            const description = card.querySelector('.restaurant-description').textContent.toLowerCase();
+            
+            // Apply search filter
+            const matchesSearch = !searchTerm || 
+                                name.includes(searchTerm) || 
+                                description.includes(searchTerm) ||
+                                cuisine.toLowerCase().includes(searchTerm);
+            
+            // Apply cuisine filter
+            const matchesCuisine = !cuisineFilter || cuisine === cuisineFilter;
+            
+            if (matchesSearch && matchesCuisine) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Apply sorting
+        sortRestaurants(sortFilter);
+    }
+    
+    function sortRestaurants(sortBy) {
+        const container = document.querySelector('.restaurant-grid');
+        const cards = Array.from(container.querySelectorAll('.restaurant-card'));
+        
+        cards.sort((a, b) => {
+            if (sortBy === 'rating') {
+                const ratingA = parseFloat(a.getAttribute('data-rating')) || 0;
+                const ratingB = parseFloat(b.getAttribute('data-rating')) || 0;
+                return ratingB - ratingA;
+            } else if (sortBy === 'name') {
+                const nameA = a.querySelector('.restaurant-name').textContent;
+                const nameB = b.querySelector('.restaurant-name').textContent;
+                return nameA.localeCompare(nameB);
+            } else {
+                return 0; // Default order
+            }
+        });
+        
+        // Re-append cards in sorted order
+        cards.forEach(card => container.appendChild(card));
+    }
+    
+    function loadMoreRestaurants() {
+        // This would typically make an API call to load more restaurants
+        showNotification('Loading more restaurants...', 'info');
+        
+        // Simulate API call
+        setTimeout(() => {
+            showNotification('No more restaurants to load', 'info');
+        }, 1000);
+    }
+    
+    // Initialize search on input
+    document.querySelector('.search-input').addEventListener('input', applyFilters);
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        applyFilters();
+    });
+</script>
+{% endblock %}
+{% endblock %}

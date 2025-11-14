@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Blockchain Integrity - Villain Food App{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--text-light); margin-bottom: 0.5rem;">Blockchain Integrity</h1>
+        <p style="color: var(--text-gray);">Distributed ledger audit for completed orders</p>
+    </div>
+
+    <div class="card" style="background: var(--card-bg); padding: 2rem; border-radius: var(--border-radius);">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+            <div style="font-size:2.5rem;">
+                {% if integrity %}
+                <i class="fas fa-check-circle" style="color:#4CAF50;"></i>
+                {% else %}
+                <i class="fas fa-exclamation-triangle" style="color:#FF4757;"></i>
+                {% endif %}
+            </div>
+            <div>
+                <h2 style="color: var(--text-light); margin:0;">
+                    {% if integrity %}Ledger Verified{% else %}Tampering Detected{% endif %}
+                </h2>
+                <p style="color: var(--text-gray); margin:0;">{{ message }}</p>
+            </div>
+        </div>
+
+        <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
+            <a class="btn-primary" href="{{ url_for('admin.blockchain_verify') }}">
+                <i class="fas fa-sync-alt"></i> Re-run Verification
+            </a>
+            <a class="btn-login" href="{{ url_for('security.classification_json') }}">
+                <i class="fas fa-download"></i> Export Ledger Snapshot
+            </a>
+        </div>
+    </div>
+
+    <section style="margin-top:2rem;">
+        <h3 style="color: var(--text-light); margin-bottom: 1rem;">Why Blockchain?</h3>
+        <ul style="color: var(--text-gray); line-height:1.8; padding-left:1.2rem;">
+            <li>Distributed integrity: every delivered order is hashed and linked to the previous record.</li>
+            <li>Transparency for restaurants and auditors via `/admin/blockchain/verify`.</li>
+            <li>Immutable audit trail stored in `blockchain_records` table + JSON exports.</li>
+        </ul>
+    </section>
+</div>
+{% endblock %}
+

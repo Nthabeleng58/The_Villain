@@ -1,0 +1,42 @@
+# Environment variables
+.env
+.env.local
+
+# Ethereum private keys (NEVER commit!)
+*.key
+*.pem
+private_key.txt
+
+# Compiled contracts
+blockchain/contracts/*.json
+!blockchain/contracts/deployment.example.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Database
+*.db
+*.sqlite
+data/
+
+# AI Models
+ai/model.pkl
+*.pkl
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+

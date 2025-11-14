@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Register Restaurant - Villain Food App{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2 style="color: var(--text-light); margin-bottom: 1rem;">Register Your Restaurant</h2>
+    <p style="color: var(--text-gray); margin-bottom: 1.5rem;">
+        Complete this simple form to onboard your restaurant and unlock the owner dashboard.
+    </p>
+
+    <form method="POST" action="{{ url_for('restaurant.onboard') }}">
+        <div class="form-group">
+            <label class="form-label" for="name">Restaurant Name</label>
+            <input type="text" class="form-input" id="name" name="name" required placeholder="e.g. Shadow Bistro">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="cuisine_type">Cuisine Type</label>
+            <input type="text" class="form-input" id="cuisine_type" name="cuisine_type" required placeholder="e.g. Fusion, Vegan, Burgers">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="delivery_time">Average Delivery Time</label>
+            <input type="text" class="form-input" id="delivery_time" name="delivery_time" value="30 mins">
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 0.85rem;">
+            <i class="fas fa-store"></i> Save and Continue
+        </button>
+    </form>
+</div>
+
+<style>
+    .form-container {
+        max-width: 500px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+    }
+</style>
+{% endblock %}
+

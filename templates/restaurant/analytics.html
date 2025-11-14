@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - The Villain Food-App{% endblock %}
+
+{% block content %}
+<div class="analytics-page" style="max-width: 1200px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--text-light); margin-bottom: 0.5rem;">Restaurant Analytics</h1>
+        <p style="color: var(--text-gray);">Track your restaurant's performance and insights</p>
+    </div>
+
+    {% if not restaurant %}
+    <div style="background: var(--card-bg); padding: 3rem; border-radius: var(--border-radius); text-align: center;">
+        <i class="fas fa-store-slash" style="font-size: 4rem; color: var(--text-gray); margin-bottom: 1rem;"></i>
+        <h3 style="color: var(--text-light); margin-bottom: 1rem;">No Restaurant Found</h3>
+        <p style="color: var(--text-gray);">You need to register a restaurant to view analytics.</p>
+    </div>
+    {% else %}
+    <!-- Date Range Selector -->
+    <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 2rem;">
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <span style="color: var(--text-light); font-weight: 500;">Date Range:</span>
+            <button class="time-btn active" data-range="7">Last 7 Days</button>
+            <button class="time-btn" data-range="30">Last 30 Days</button>
+            <button class="time-btn" data-range="90">Last 90 Days</button>
+            <button class="time-btn" data-range="custom">Custom Range</button>
+            
+            <div id="custom-range" style="display: none; margin-left: auto; display: flex; gap: 0.5rem;">
+                <input type="date" class="form-input" style="width: 150px;">
+                <span style="color: var(--text-gray);">to</span>
+                <input type="date" class="form-input" style="width: 150px;">
+                <button class="btn-primary">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="metric-card" style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); text-align: center;">
+            <div class="metric-icon" style="font-size: 2rem; color: var(--primary-purple); margin-bottom: 0.5rem;">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h3 style="color: var(--text-light); margin-bottom: 0.5rem;">Total Orders</h3>
+            <p style="color: var(--text-gray); font-size: 1.5rem; font-weight: bold;">147</p>
+            <p style="color: #4CAF50; font-size: 0.9rem; margin: 0;">
+                <i class="fas fa-arrow-up"></i> 12% from last period
+            </p>
+        </div>
+        
+        <div class="metric-card" style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); text-align: center;">
+            <div class="metric-icon" style="font-size: 2rem; color: var(--primary-purple); margin-bottom: 0.5rem;">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <h3 style="color: var(--text-light); margin-bottom: 0.5rem;">Total Revenue</h3>
+            <p style="color: var(--text-gray); font-size: 1.5rem; font-weight: bold;">M3,847.50</p>
+            <p style="color: #4CAF50; font-size: 0.9rem; margin: 0;">
+                <i class="fas fa-arrow-up"></i> 8% from last period
+            </p>
+        </div>
+        
+        <div class="metric-card" style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); text-align: center;">
+            <div class="metric-icon" style="font-size: 2rem; color: var(--primary-purple); margin-bottom: 0.5rem;">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3 style="color: var(--text-light); margin-bottom: 0.5rem;">Average Order Value</h3>
+            <p style="color: var(--text-gray); font-size: 1.5rem; font-weight: bold;">M26.17</p>
+            <p style="color: #FF4757; font-size: 0.9rem; margin: 0;">
+                <i class="fas fa-arrow-down"></i> 3% from last period
+            </p>
+        </div>
+        
+        <div class="metric-card" style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); text-align: center;">
+            <div class="metric-icon" style="font-size: 2rem; color: var(--primary-purple); margin-bottom: 0.5rem;">
+                <i class="fas fa-star"></i>
+            </div>
+            <h3 style="color: var(--text-light); margin-bottom: 0.5rem;">Customer Rating</h3>
+            <p style="color: var(--text-gray); font-size: 1.5rem; font-weight: bold;">4.7/5</p>
+            <p style="color: #4CAF50; font-size: 0.9rem; margin: 0;">
+                <i class="fas fa-arrow-up"></i> 0.2 from last period
+            </p>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <!-- Main Charts -->
+        <div class="main-charts">
+            <!-- Revenue Chart -->
+            <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 1.5rem;">
+                <h3 style="color: var(--text-light); margin-bottom: 1rem;">Revenue Trend</h3>
+                <div id="revenue-chart" style="height: 300px; background: rgba(139, 95, 191, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-gray);">
+                    <div style="text-align: center;">
+                        <i class="fas fa-chart-line" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>Revenue chart will be displayed here</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Orders Chart -->
+            <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius);">
+                <h3 style="color: var(--text-light); margin-bottom: 1rem;">Orders Over Time</h3>
+                <div id="orders-chart" style="height: 300px; background: rgba(139, 95, 191, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-gray);">
+                    <div style="text-align: center;">
+                        <i class="fas fa-chart-bar" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>Orders chart will be displayed here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Insights -->
+        <div class="insights-sidebar">
+            <!-- Top Items -->
+            <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 1.5rem;">
+                <h3 style="color: var(--text-light); margin-bottom: 1rem;">Top Menu Items</h3>
+                
+                <div class="top-items-list">
+                    {% set top_items = [
+                        {'name': 'Dark Knight Burger', 'orders': 45, 'revenue': 584.55},
+                        {'name': 'Gothic Fries', 'orders': 38, 'revenue': 189.62},
+                        {'name': 'Villainous Vegan Bowl', 'orders': 32, 'revenue': 351.68},
+                        {'name': 'Evil Shake', 'orders': 28, 'revenue': 167.72},
+                        {'name': 'Sinister Sushi Platter', 'orders': 25, 'revenue': 399.75}
+                    ] %}
+                    
+                    {% for item in top_items %}
+                    <div style="display: flex; justify-content: between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #444;">
+                        <div>
+                            <div style="color: var(--text-light); font-weight: 500; margin-bottom: 0.25rem;">
+                                {{ item.name }}
+                            </div>
+                            <div style="color: var(--text-gray); font-size: 0.8rem;">
+                                {{ item.orders }} orders
+                            </div>
+                        </div>
+                        <div style="color: var(--primary-purple); font-weight: bold;">
+                            M{{ "%.2f"|format(item.revenue) }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Peak Hours -->
+            <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius);">
+                <h3 style="color: var(--text-light); margin-bottom: 1rem;">Peak Hours</h3>
+                
+                <div class="peak-hours">
+                    {% set peak_hours = [
+                        {'hour': '12:00 PM', 'orders': 23},
+                        {'hour': '1:00 PM', 'orders': 28},
+                        {'hour': '6:00 PM', 'orders': 35},
+                        {'hour': '7:00 PM', 'orders': 32},
+                        {'hour': '8:00 PM', 'orders': 25}
+                    ] %}
+                    
+                    {% for hour in peak_hours %}
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: between; margin-bottom: 0.25rem;">
+                            <span style="color: var(--text-light);">{{ hour.hour }}</span>
+                            <span style="color: var(--text-gray);">{{ hour.orders }} orders</span>
+                        </div>
+                        <div style="background: #444; border-radius: 4px; height: 8px; overflow: hidden;">
+                            <div style="background: var(--primary-purple); height: 100%; width: {{ (hour.orders / 35 * 100)|round }}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Insights -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <!-- Customer Insights -->
+        <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius);">
+            <h3 style="color: var(--text-light); margin-bottom: 1rem;">Customer Insights</h3>
+            
+            <div style="color: var(--text-gray);">
+                <div style="display: flex; justify-content: between; margin-bottom: 0.75rem;">
+                    <span>New Customers:</span>
+                    <span style="color: var(--text-light);">42%</span>
+                </div>
+                <div style="display: flex; justify-content: between; margin-bottom: 0.75rem;">
+                    <span>Returning Customers:</span>
+                    <span style="color: var(--text-light);">58%</span>
+                </div>
+                <div style="display: flex; justify-content: between; margin-bottom: 0.75rem;">
+                    <span>Average Preparation Time:</span>
+                    <span style="color: var(--text-light);">18 min</span>
+                </div>
+                <div style="display: flex; justify-content: between;">
+                    <span>Order Completion Rate:</span>
+                    <span style="color: var(--text-light);">98.2%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius);">
+            <h3 style="color: var(--text-light); margin-bottom: 1rem;">Performance Metrics</h3>
+            
+            <div style="color: var(--text-gray);">
+                <div style="display: flex; justify-content: between; margin-bottom: 0.75rem;">
+                    <span>Kitchen Efficiency:</span>
+                    <span style="color: var(--text-light);">92%</span>
+                </div>
+                <div style="display: flex; justify-content: between; margin-bottom: 0.75rem;">
+                    <span>Order Accuracy:</span>
+                    <span style="color: var(--text-light);">96.5%</span>
+                </div>
+                <div style="display: flex; justify-content: between; margin-bottom: 0.75rem;">
+                    <span>Customer Satisfaction:</span>
+                    <span style="color: var(--text-light);">4.7/5</span>
+                </div>
+                <div style="display: flex; justify-content: between;">
+                    <span>On-time Delivery:</span>
+                    <span style="color: var(--text-light);">94.8%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Section -->
+    <div style="text-align: center; margin-top: 2rem;">
+        <button class="btn-primary" onclick="exportAnalytics()">
+            <i class="fas fa-download"></i> Export Analytics Report
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .time-btn {
+        background: transparent;
+        border: 1px solid #444;
+        color: var(--text-gray);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    .time-btn:hover, .time-btn.active {
+        background: var(--primary-purple);
+        border-color: var(--primary-purple);
+        color: white;
+    }
+    
+    .metric-card {
+        transition: transform 0.2s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+        .analytics-page > div:nth-child(4) {
+            grid-template-columns: 1fr;
+        }
+        
+        .analytics-page > div:nth-child(6) {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+{% block scripts %}
+<script>
+    // Date range selection
+    document.querySelectorAll('.time-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Update active state
+            document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const range = this.getAttribute('data-range');
+            const customRange = document.getElementById('custom-range');
+            
+            if (range === 'custom') {
+                customRange.style.display = 'flex';
+            } else {
+                customRange.style.display = 'none';
+                loadAnalyticsData(range);
+            }
+        });
+    });
+    
+    function loadAnalyticsData(days) {
+        showNotification(`Loading data for last ${days} days...`, 'info');
+        
+        // Simulate API call to load analytics data
+        setTimeout(() => {
+            showNotification('Analytics data loaded!', 'success');
+            // In a real app, this would update the charts and metrics
+        }, 1500);
+    }
+    
+    function exportAnalytics() {
+        showNotification('Generating analytics report...', 'info');
+        
+        // Simulate export process
+        setTimeout(() => {
+            showNotification('Analytics report exported successfully!', 'success');
+        }, 2000);
+    }
+    
+    // Initialize with default range
+    document.addEventListener('DOMContentLoaded', function() {
+        loadAnalyticsData(7);
+    });
+</script>
+{% endblock %}
+{% endblock %}

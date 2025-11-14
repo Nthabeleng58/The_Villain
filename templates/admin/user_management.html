@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}User Management - Villain Food App{% endblock %}
+
+{% block content %}
+<div style="max-width: 1100px; margin: 0 auto;">
+    <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <div>
+            <h1 style="color: var(--text-light); margin:0;">User Directory</h1>
+            <p style="color: var(--text-gray); margin:0;">Classified data: confidential</p>
+        </div>
+        <a class="btn-login" href="{{ url_for('security.security_configuration') }}">
+            <i class="fas fa-shield-alt"></i> Security Module
+        </a>
+    </div>
+
+    <div style="background: var(--card-bg); border-radius: var(--border-radius); overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="text-align:left; color: var(--text-light); border-bottom:1px solid #444;">
+                    <th style="padding:0.75rem;">Name</th>
+                    <th style="padding:0.75rem;">Email</th>
+                    <th style="padding:0.75rem;">Role</th>
+                    <th style="padding:0.75rem;">Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if users %}
+                    {% for user in users %}
+                    <tr style="color: var(--text-gray); border-bottom:1px solid #333;">
+                        <td style="padding:0.75rem; color: var(--text-light);">{{ user.name or 'Unknown' }}</td>
+                        <td style="padding:0.75rem;">{{ user.email }}</td>
+                        <td style="padding:0.75rem; text-transform:capitalize;">{{ user.role }}</td>
+                        <td style="padding:0.75rem;">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '' }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="4" style="padding:1rem; color:var(--text-gray); text-align:center;">No users found.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

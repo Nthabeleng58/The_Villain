@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+
+{% block title %}Menu Management - Admin - The Villain Food-App{% endblock %}
+
+{% block content %}
+<div class="menu-management" style="max-width: 1200px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--text-light); margin-bottom: 0.5rem;">Menu Management</h1>
+        <p style="color: var(--text-gray);">Manage menu items for all restaurants</p>
+    </div>
+
+    <!-- Restaurant Selector -->
+    <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 2rem;">
+        <label for="restaurant-select" style="display: block; color: var(--text-light); margin-bottom: 0.5rem; font-weight: 500;">
+            Select Restaurant:
+        </label>
+        <select id="restaurant-select" class="form-input" style="width: 100%; max-width: 400px;" onchange="selectRestaurant()">
+            <option value="">-- Select a Restaurant --</option>
+            {% for restaurant in restaurants %}
+            <option value="{{ restaurant.id }}" {% if selected_restaurant and selected_restaurant.id == restaurant.id %}selected{% endif %}>
+                {{ restaurant.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% if selected_restaurant %}
+    <!-- Action Bar -->
+    <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h2 style="color: var(--text-light); margin: 0;">{{ selected_restaurant.name }} Menu</h2>
+                <p style="color: var(--text-gray); margin: 0.25rem 0 0 0;">{{ menu_items|length }} items</p>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn-primary" onclick="showAddItemModal()">
+                    <i class="fas fa-plus"></i> Add New Item
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Items Grid -->
+    <div class="menu-items-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+        {% for item in menu_items %}
+        <div class="menu-item-card" style="background: var(--card-bg); border-radius: var(--border-radius); overflow: hidden;">
+            <div style="padding: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <h3 style="color: var(--text-light); margin: 0;">{{ item.name }}</h3>
+                    <span style="background: {% if item.is_available %}rgba(76,175,80,0.2){% else %}rgba(255,71,87,0.2){% endif %};
+                                 color: {% if item.is_available %}#4CAF50{% else %}#FF4757{% endif %};
+                                 padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.8rem;">
+                        {% if item.is_available %}Available{% else %}Unavailable{% endif %}
+                    </span>
+                </div>
+                
+                <p style="color: var(--text-gray); margin-bottom: 1rem; font-size: 0.9rem;">{{ item.description or 'No description' }}</p>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span style="color: var(--primary-purple); font-weight: bold; font-size: 1.2rem;">M{{ "%.2f"|format(item.price) }}</span>
+                    <span style="color: var(--text-gray); font-size: 0.9rem;">{{ item.category }}</span>
+                </div>
+                
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn-login" style="flex: 1; padding: 0.5rem;" onclick="editItem({{ item.id }})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn-login" style="flex: 1; padding: 0.5rem;" onclick="toggleAvailability({{ item.id }})">
+                        <i class="fas fa-toggle-{% if item.is_available %}on{% else %}off{% endif %}"></i> Toggle
+                    </button>
+                    <button class="btn-login" style="flex: 1; padding: 0.5rem; background: rgba(255,71,87,0.2); color: #FF4757;" onclick="deleteItem({{ item.id }})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--card-bg); border-radius: var(--border-radius);">
+            <i class="fas fa-utensils" style="font-size: 4rem; color: var(--text-gray); margin-bottom: 1rem;"></i>
+            <h3 style="color: var(--text-light); margin-bottom: 0.5rem;">No Menu Items</h3>
+            <p style="color: var(--text-gray);">Click "Add New Item" to create your first menu item.</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="background: var(--card-bg); padding: 3rem; border-radius: var(--border-radius); text-align: center;">
+        <i class="fas fa-store-slash" style="font-size: 4rem; color: var(--text-gray); margin-bottom: 1rem;"></i>
+        <h3 style="color: var(--text-light); margin-bottom: 1rem;">Select a Restaurant</h3>
+        <p style="color: var(--text-gray);">Please select a restaurant from the dropdown above to manage its menu.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add/Edit Item Modal -->
+<div id="item-modal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--card-bg); border-radius: var(--border-radius); width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
+            <h2 id="modal-title" style="color: var(--text-light); margin: 0;">Add Menu Item</h2>
+            <button onclick="closeModal()" style="background: none; border: none; color: var(--text-gray); font-size: 1.5rem; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div style="padding: 1.5rem;">
+            <form id="item-form">
+                <input type="hidden" id="item-id" name="id">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="item-name">Item Name</label>
+                        <input type="text" class="form-input" id="item-name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="item-price">Price (M)</label>
+                        <input type="number" class="form-input" id="item-price" name="price" step="0.01" min="0" required>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label class="form-label" for="item-category">Category</label>
+                    <select class="form-input" id="item-category" name="category" required>
+                        <option value="">Select Category</option>
+                        <option value="Appetizers">Appetizers</option>
+                        <option value="Main Course">Main Course</option>
+                        <option value="Desserts">Desserts</option>
+                        <option value="Beverages">Beverages</option>
+                        <option value="Sides">Sides</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label class="form-label" for="item-description">Description</label>
+                    <textarea class="form-input" id="item-description" name="description" rows="3" required></textarea>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-light); cursor: pointer;">
+                            <input type="checkbox" id="item-vegetarian" name="is_vegetarian">
+                            <span><i class="fas fa-leaf"></i> Vegetarian</span>
+                        </label>
+                    </div>
+                    
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-light); cursor: pointer;">
+                            <input type="checkbox" id="item-spicy" name="is_spicy">
+                            <span><i class="fas fa-pepper-hot"></i> Spicy</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label class="form-label" for="item-image">Image URL (optional)</label>
+                    <input type="url" class="form-input" id="item-image" name="image_url" placeholder="https://example.com/image.jpg">
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button type="button" class="btn-primary" onclick="saveItem()" style="flex: 1;">
+                        <i class="fas fa-save"></i> Save Item
+                    </button>
+                    <button type="button" class="btn-login" onclick="closeModal()" style="flex: 1;">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal {
+        display: none;
+    }
+</style>
+
+{% block scripts %}
+<script>
+    let currentEditingItem = null;
+    const restaurantId = {{ selected_restaurant.id if selected_restaurant else 'null' }};
+    
+    function selectRestaurant() {
+        const select = document.getElementById('restaurant-select');
+        const restaurantId = select.value;
+        if (restaurantId) {
+            window.location.href = `{{ url_for('admin.menu_management') }}?restaurant_id=${restaurantId}`;
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        const existing = document.querySelector('.notification');
+        if (existing) {
+            existing.remove();
+        }
+        
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        `;
+        
+        if (type === 'success') {
+            notification.style.background = '#4CAF50';
+        } else if (type === 'error') {
+            notification.style.background = '#FF4757';
+        } else {
+            notification.style.background = 'var(--primary-purple)';
+        }
+        
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }
+    
+    function showAddItemModal() {
+        if (!restaurantId) {
+            showNotification('Please select a restaurant first', 'error');
+            return;
+        }
+        document.getElementById('modal-title').textContent = 'Add Menu Item';
+        document.getElementById('item-form').reset();
+        document.getElementById('item-id').value = '';
+        currentEditingItem = null;
+        document.getElementById('item-modal').style.display = 'flex';
+    }
+    
+    function closeModal() {
+        document.getElementById('item-modal').style.display = 'none';
+    }
+    
+    async function editItem(itemId) {
+        try {
+            const response = await fetch(`/restaurant/menu/item/${itemId}`);
+            const result = await response.json();
+            
+            if (result.success && result.item) {
+                const item = result.item;
+                document.getElementById('modal-title').textContent = 'Edit Menu Item';
+                document.getElementById('item-id').value = item.id;
+                document.getElementById('item-name').value = item.name;
+                document.getElementById('item-price').value = item.price;
+                document.getElementById('item-category').value = item.category;
+                document.getElementById('item-description').value = item.description || '';
+                document.getElementById('item-vegetarian').checked = item.is_vegetarian == 1;
+                document.getElementById('item-spicy').checked = item.is_spicy == 1;
+                document.getElementById('item-image').value = item.image_url || '';
+                
+                currentEditingItem = item;
+                document.getElementById('item-modal').style.display = 'flex';
+            } else {
+                showNotification('Failed to load menu item', 'error');
+            }
+        } catch (error) {
+            console.error('Error loading menu item:', error);
+            showNotification('Error loading menu item', 'error');
+        }
+    }
+    
+    async function saveItem() {
+        if (!restaurantId) {
+            showNotification('Please select a restaurant first', 'error');
+            return;
+        }
+        
+        const form = document.getElementById('item-form');
+        const formData = new FormData(form);
+        
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        const submitBtn = form.querySelector('.btn-primary');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        submitBtn.disabled = true;
+        
+        try {
+            const itemId = document.getElementById('item-id').value;
+            const data = {
+                name: formData.get('name'),
+                category: formData.get('category'),
+                price: parseFloat(formData.get('price')),
+                description: formData.get('description'),
+                is_vegetarian: document.getElementById('item-vegetarian').checked,
+                is_spicy: document.getElementById('item-spicy').checked,
+                image_url: formData.get('image_url') || ''
+            };
+            
+            // For admin, we need to use a special endpoint that allows setting restaurant_id
+            // For now, we'll use the restaurant endpoint but we need to be logged in as that restaurant owner
+            // This is a limitation - we should create admin-specific endpoints
+            showNotification('Note: Admin menu management requires restaurant owner permissions. Please use restaurant dashboard for now.', 'info');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+            
+        } catch (error) {
+            console.error('Error saving item:', error);
+            showNotification('Error saving item. Please try again.', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+    
+    async function toggleAvailability(itemId) {
+        if (confirm('Are you sure you want to change this item\'s availability?')) {
+            try {
+                showNotification('Updating availability...', 'info');
+                
+                const response = await fetch(`/restaurant/menu/item/${itemId}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Availability updated!', 'success');
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    showNotification(result.message || 'Failed to update availability', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating availability:', error);
+                showNotification('Error updating availability. Please try again.', 'error');
+            }
+        }
+    }
+    
+    async function deleteItem(itemId) {
+        if (confirm('Are you sure you want to delete this menu item? This action cannot be undone.')) {
+            try {
+                showNotification('Deleting item...', 'info');
+                
+                const response = await fetch(`/restaurant/menu/item/${itemId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Item deleted successfully!', 'success');
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    showNotification(result.message || 'Failed to delete item', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting item:', error);
+                showNotification('Error deleting item. Please try again.', 'error');
+            }
+        }
+    }
+    
+    // Close modal when clicking outside
+    document.getElementById('item-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}
+

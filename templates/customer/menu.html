@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Menu - {{ restaurant.name }}{% endblock %}
+
+{% block content %}
+<div class="menu-page" style="max-width: 1200px; margin: 0 auto;">
+    <!-- Restaurant Header -->
+    <div class="restaurant-header" style="background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('{{ restaurant.banner_url or url_for('static', filename='images/restaurant-banner.svg') }}'); 
+                                         background-size: cover; background-position: center; color: white; padding: 3rem 2rem; border-radius: var(--border-radius); margin-bottom: 2rem;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">{{ restaurant.name }}</h1>
+            <p style="font-size: 1.2rem; margin-bottom: 1rem; opacity: 0.9;">{{ restaurant.cuisine_type }}</p>
+            <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-star" style="color: #FFD700;"></i>
+                    <span>{{ restaurant.rating or '4.5' }} (250+ reviews)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-clock"></i>
+                    <span>{{ restaurant.delivery_time or '25-35 min' }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-truck"></i>
+                    <span>Free delivery over M150</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 300px; gap: 2rem;">
+        <!-- Menu Section -->
+        <div class="menu-section">
+            <h2 style="color: var(--text-light); margin-bottom: 1.5rem; border-bottom: 2px solid var(--primary-purple); padding-bottom: 0.5rem;">Menu</h2>
+            
+            {% if menu_items %}
+            <div class="menu-categories">
+                {% set categories = menu_items|map(attribute='category')|unique|list %}
+                {% for category in categories %}
+                <div class="menu-category" style="margin-bottom: 2rem;">
+                    <h3 style="color: var(--text-light); margin-bottom: 1rem; font-size: 1.3rem;">{{ category }}</h3>
+                    <div class="menu-items">
+                        {% for item in menu_items %}
+                            {% if item.category == category %}
+                            <div class="menu-item" style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 1rem; display: flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                        <h4 style="color: var(--text-light); margin: 0;">{{ item.name }}</h4>
+                                        <span style="color: var(--primary-purple); font-weight: bold;">M{{ "%.2f"|format(item.price) }}</span>
+                                    </div>
+                                    <p style="color: var(--text-gray); margin-bottom: 1rem; line-height: 1.4;">{{ item.description }}</p>
+                                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                        {% if item.is_vegetarian %}
+                                        <span style="background: #4CAF50; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.7rem;">Vegetarian</span>
+                                        {% endif %}
+                                        {% if item.is_spicy %}
+                                        <span style="background: #FF4757; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.7rem;">Spicy</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div style="width: 100px; height: 100px; flex-shrink: 0;">
+                                    <img src="{{ item.image_url or url_for('static', filename='images/food-placeholder.svg') }}" 
+                                         alt="{{ item.name }}" 
+                                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                                </div>
+                                <button class="btn-primary" 
+                                        onclick="addToCart({{ item.id }}, '{{ item.name }}', {{ item.price }}, '{{ item.image_url or url_for('static', filename='images/food-placeholder.svg') }}')"
+                                        style="align-self: center; margin-left: 1rem;">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 3rem; color: var(--text-gray);">
+                <i class="fas fa-utensils" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <h3>Menu Coming Soon</h3>
+                <p>This restaurant is currently setting up their menu</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Cart Sidebar -->
+        <div class="cart-sidebar">
+            <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); position: sticky; top: 2rem;">
+                <h3 style="color: var(--text-light); margin-bottom: 1rem;">Your Order</h3>
+                
+                <div id="cart-items">
+                    <div style="text-align: center; color: var(--text-gray); padding: 2rem 0;">
+                        <i class="fas fa-shopping-cart" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Your cart is empty</p>
+                    </div>
+                </div>
+                
+                <div id="cart-total" style="display: none;">
+                    <div style="border-top: 1px solid #444; padding-top: 1rem; margin-top: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="color: var(--text-gray);">Subtotal:</span>
+                            <span id="subtotal-amount" style="color: var(--text-light);">M0.00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                            <span style="color: var(--text-gray);">Delivery:</span>
+                            <span style="color: var(--text-light);">M2.99</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1rem;">
+                            <span style="color: var(--text-light);">Total:</span>
+                            <span id="total-amount" style="color: var(--primary-purple);">M0.00</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-primary" style="width: 100%; margin-top: 1rem;" onclick="proceedToCheckout()">
+                        <i class="fas fa-credit-card"></i> Checkout
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Restaurant Info -->
+            <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-top: 1rem;">
+                <h4 style="color: var(--text-light); margin-bottom: 1rem;">Restaurant Info</h4>
+                <div style="color: var(--text-gray); line-height: 1.6;">
+                    <p><strong>Description:</strong><br>{{ restaurant.description }}</p>
+                    <p><strong>Address:</strong><br>{{ restaurant.address or '123 Villain Street, Dark City' }}</p>
+                    <p><strong>Delivery Time:</strong><br>{{ restaurant.delivery_time or '25-35 minutes' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .menu-item {
+        transition: transform 0.2s ease;
+    }
+    
+    .menu-item:hover {
+        transform: translateX(5px);
+    }
+    
+    .cart-sidebar {
+        position: sticky;
+        top: 2rem;
+        align-self: start;
+    }
+    
+    @media (max-width: 768px) {
+        .menu-page > div {
+            grid-template-columns: 1fr;
+        }
+        
+        .cart-sidebar {
+            order: -1;
+        }
+    }
+</style>
+
+{% block scripts %}
+<script>
+    function addToCart(itemId, name, price, image) {
+        const cart = JSON.parse(localStorage.getItem('villainCart')) || [];
+        const existingItem = cart.find(item => item.id === itemId);
+        
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                id: itemId,
+                name: name,
+                price: price,
+                image: image,
+                quantity: 1,
+                restaurant_id: {{ restaurant.id }},
+                restaurant_name: '{{ restaurant.name }}'
+            });
+        }
+        
+        localStorage.setItem('villainCart', JSON.stringify(cart));
+        updateCartDisplay();
+        updateCartCount();
+        
+        showNotification(`Added ${name} to cart!`, 'success');
+    }
+    
+    function updateCartDisplay() {
+        const cart = JSON.parse(localStorage.getItem('villainCart')) || [];
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartTotalSection = document.getElementById('cart-total');
+        
+        // Filter items for this restaurant only
+        const restaurantItems = cart.filter(item => item.restaurant_id === {{ restaurant.id }});
+        
+        if (restaurantItems.length === 0) {
+            cartItemsContainer.innerHTML = `
+                <div style="text-align: center; color: var(--text-gray); padding: 2rem 0;">
+                    <i class="fas fa-shopping-cart" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p>Your cart is empty</p>
+                </div>
+            `;
+            cartTotalSection.style.display = 'none';
+            return;
+        }
+        
+        let itemsHTML = '';
+        let subtotal = 0;
+        
+        restaurantItems.forEach(item => {
+            const itemTotal = item.price * item.quantity;
+            subtotal += itemTotal;
+            
+            itemsHTML += `
+                <div class="cart-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #444;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500; color: var(--text-light);">${item.name}</div>
+                        <div style="font-size: 0.9rem; color: var(--text-gray);">M${item.price.toFixed(2)} each</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button onclick="updateCartQuantity(${item.id}, -1)" 
+                                style="background: var(--dark-bg); border: 1px solid #444; color: var(--text-light); width: 25px; height: 25px; border-radius: 50%; cursor: pointer;">-</button>
+                        <span style="color: var(--text-light); min-width: 20px; text-align: center;">${item.quantity}</span>
+                        <button onclick="updateCartQuantity(${item.id}, 1)" 
+                                style="background: var(--primary-purple); border: none; color: white; width: 25px; height: 25px; border-radius: 50%; cursor: pointer;">+</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        cartItemsContainer.innerHTML = itemsHTML;
+        
+        const deliveryFee = 2.99;
+        const total = subtotal + deliveryFee;
+        
+        document.getElementById('subtotal-amount').textContent = `M${subtotal.toFixed(2)}`;
+        document.getElementById('total-amount').textContent = `M${total.toFixed(2)}`;
+        cartTotalSection.style.display = 'block';
+    }
+    
+    function updateCartQuantity(itemId, change) {
+        const cart = JSON.parse(localStorage.getItem('villainCart')) || [];
+        const item = cart.find(item => item.id === itemId);
+        
+        if (item) {
+            item.quantity += change;
+            
+            if (item.quantity <= 0) {
+                const itemIndex = cart.findIndex(item => item.id === itemId);
+                cart.splice(itemIndex, 1);
+            }
+            
+            localStorage.setItem('villainCart', JSON.stringify(cart));
+            updateCartDisplay();
+            updateCartCount();
+        }
+    }
+    
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('villainCart')) || [];
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const cartCount = document.querySelector('.cart-count');
+        if (cartCount) {
+            cartCount.textContent = totalItems;
+        }
+    }
+    
+    function proceedToCheckout() {
+        const cart = JSON.parse(localStorage.getItem('villainCart')) || [];
+        const restaurantItems = cart.filter(item => item.restaurant_id === {{ restaurant.id }});
+        
+        if (restaurantItems.length === 0) {
+            showNotification('Your cart is empty', 'error');
+            return;
+        }
+        
+        // Redirect to checkout page
+        window.location.href = "{{ url_for('customer.checkout') }}";
+    }
+    
+    // Initialize cart display on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartDisplay();
+        updateCartCount();
+    });
+</script>
+{% endblock %}
+{% endblock %}

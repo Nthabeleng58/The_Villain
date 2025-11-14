@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart - The Villain Food-App{% endblock %}
+
+{% block content %}
+<div class="cart-page" style="max-width: 1000px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--text-light); margin-bottom: 0.5rem;">Shopping Cart</h1>
+        <p style="color: var(--text-gray);">Review your order before checkout</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+        <!-- Cart Items -->
+        <div class="cart-items-section">
+            <div style="background: var(--card-bg); border-radius: var(--border-radius); overflow: hidden;">
+                <div style="padding: 1.5rem; border-bottom: 1px solid #444;">
+                    <h2 style="color: var(--text-light); margin: 0;">Your Order</h2>
+                </div>
+                
+                <div id="cart-items-container">
+                    <!-- Cart items will be populated by JavaScript -->
+                </div>
+                
+                <div id="empty-cart" style="padding: 3rem; text-align: center; color: var(--text-gray); display: none;">
+                    <i class="fas fa-shopping-cart" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <h3>Your cart is empty</h3>
+                    <p>Add some delicious items to get started</p>
+                    <a href="{{ url_for('customer.dashboard') }}" class="btn-primary" style="margin-top: 1rem; text-decoration: none;">
+                        <i class="fas fa-utensils"></i> Browse Restaurants
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); position: sticky; top: 2rem;">
+                <h3 style="color: var(--text-light); margin-bottom: 1rem;">Order Summary</h3>
+                
+                <div id="order-details">
+                    <div style="color: var(--text-gray); text-align: center; padding: 2rem;">
+                        Add items to see order details
+                    </div>
+                </div>
+                
+                <div id="checkout-section" style="display: none;">
+                    <div style="border-top: 1px solid #444; padding-top: 1rem; margin-top: 1rem;">
+                        <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
+                            <span style="color: var(--text-gray);">Subtotal:</span>
+                            <span id="summary-subtotal" style="color: var(--text-light);">M0.00</span>
+                        </div>
+                        <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
+                            <span style="color: var(--text-gray);">Delivery Fee:</span>
+                            <span style="color: var(--text-light);">M2.99</span>
+                        </div>
+                        <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
+                            <span style="color: var(--text-gray);">Tax:</span>
+                            <span id="summary-tax" style="color: var(--text-light);">M0.00</span>
+                        </div>
+                        <div style="display: flex; justify-content: between; font-weight: bold; font-size: 1.1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #444;">
+                            <span style="color: var(--text-light);">Total:</span>
+                            <span id="summary-total" style="color: var(--primary-purple);">M0.00</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-primary" style="width: 100%; margin-top: 1.5rem; padding: 1rem;" onclick="proceedToCheckout()">
+                        <i class="fas fa-credit-card"></i> Proceed to Checkout
+                    </button>
+                    
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <a href="{{ url_for('customer.dashboard') }}" style="color: var(--text-gray); text-decoration: none;">
+                            <i class="fas fa-arrow-left"></i> Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .cart-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-bottom: 1px solid #444;
+        align-items: center;
+    }
+    
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+    
+    .item-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        flex-shrink: 0;
+    }
+    
+    .item-details {
+        flex: 1;
+    }
+    
+    .item-name {
+        color: var(--text-light);
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .item-restaurant {
+        color: var(--text-gray);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .item-price {
+        color: var(--primary-purple);
+        font-weight: bold;
+    }
+    
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+    }
+    
+    .quantity-btn {
+        background: var(--dark-bg);
+        border: 1px solid #444;
+        color: var(--text-light);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .quantity-btn:hover {
+        background: var(--primary-purple);
+        border-color: var(--primary-purple);
+    }
+    
+    .quantity-display {
+        color: var(--text-light);
+        min-width: 30px;
+        text-align: center;
+        font-weight: 500;
+    }
+    
+    .item-total {
+        color: var(--text-light);
+        font-weight: bold;
+        min-width: 80px;
+        text-align: right;
+    }
+    
+    .remove-btn {
+        background: none;
+        border: none;
+        color: var(--accent-red);
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 4px;
+    }
+    
+    .remove-btn:hover {
+        background: rgba(255, 71, 87, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+        .cart-page > div {
+            grid-template-columns: 1fr;
+        }
+        
+        .cart-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+        
+        .item-details {
+            text-align: center;
+        }
+        
+        .item-total {
+            text-align: center;
+        }
+    }
+</style>
+
+{% block scripts %}
+<script>
+    function loadCartItems() {
+        const cart = JSON.parse(localStorage.getItem('villainCart')) || [];
+        const container = document.getElementById('cart-items-container');
+        const emptyCart = document.getElementById('empty-cart');
+        const checkoutSection = document.getElementById('checkout-section');
+        
+        if (cart.length === 0) {
+            container.innerHTML = '';
+            emptyCart.style.display = 'block';
+            checkoutSection.style.display = 'none';
+            return;
+        }
+        
+        emptyCart.style.display = 'none';
+        
+        let itemsHTML = '';
+        let subtotal = 0;
+        
+        // Group items by restaurant
+        const restaurants = {};
+        cart.forEach(item => {
+            if (!restaurants[item.restaurant_id]) {
+                restaurants[item.restaurant_id] = {
+                    name: item.restaurant_name,
+                    items: []
+                };
+            }
+            restaurants[item.restaurant_id].items.push(item);
+        });
+        
+        // Display items by restaurant
+        Object.values(restaurants).forEach(restaurant => {
+            itemsHTML += `
+                <div style="padding: 1rem 1.5rem; background: rgba(139, 95, 191, 0.1); border-bottom: 1px solid #444;">
+                    <h4 style="color: var(--text-light); margin: 0;">
+                        <i class="fas fa-store"></i> ${restaurant.name}
+                    </h4>
+                </div>
+            `;
+            
+            restaurant.items.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                itemsHTML += `
+                    <div class="cart-item">
+                        <img src="${item.image}" alt="${item.name}" class="item-image">
+                        <div class="item-details">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-restaurant">${restaurant.name}</div>
+                            <div class="item-price">M${item.price.toFixed(2)} each</div>
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="quantity-display">${item.quantity}</span>
+                                <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="item-total">M${itemTotal.toFixed(2)}</div>
+                        <button class="remove-btn" onclick="removeItem(${item.id})" title="Remove item">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+        });
+        
+        container.innerHTML = itemsHTML;
+        updateOrderSummary(subtotal);
+        checkoutSection.style.display = 'block';
+    }
+    
+    function updateOrderSummary(subtotal) {
+        const taxRate = 0.08; // 8% tax
+        const deliveryFee = 2.99;
+        const tax = subtotal * taxRate;
+        const total = subtotal + deliveryFee + tax;
+        
+        document.getElementById('summary-subtotal').textContent = `M${subtotal.toFixed(2)}`;
+        document.getElementById('summary-tax').textContent = `M${tax.toFixed(2)}`;
+        document.getElementById('summary-total').textContent = `M${total.toFixed(2)}`;
+    }
+    
+    function updateQuantity(itemId, change) {
+        const cart = JSON.parse(localStorage.getItem('villainCart')) || [];
+        const item = cart.find(item => item.id === itemId);
+        
+        if (item) {
+            item.quantity += change;
+            
+            if (item.quantity <= 0) {
+                removeItem(itemId);
+                return;
+            }
+            
+            localStorage.setItem('villainCart', JSON.stringify(cart));
+            loadCartItems();
+            updateCartCount();
+        }
+    }
+    
+    function removeItem(itemId) {
+        const cart = JSON.parse(localStorage.getItem('villainCart')) || [];
+        const itemIndex = cart.findIndex(item => item.id === itemId);
+        
+        if (itemIndex > -1) {
+            const itemName = cart[itemIndex].name;
+            cart.splice(itemIndex, 1);
+            localStorage.setItem('villainCart', JSON.stringify(cart));
+            loadCartItems();
+            updateCartCount();
+            showNotification(`Removed ${itemName} from cart`, 'info');
+        }
+    }
+    
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('villainCart')) || [];
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const cartCount = document.querySelector('.cart-count');
+        if (cartCount) {
+            cartCount.textContent = totalItems;
+        }
+    }
+    
+    function proceedToCheckout() {
+        const cart = JSON.parse(localStorage.getItem('villainCart')) || [];
+        
+        if (cart.length === 0) {
+            showNotification('Your cart is empty', 'error');
+            return;
+        }
+        
+        // Redirect to checkout page
+        window.location.href = "{{ url_for('customer.checkout') }}";
+    }
+    
+    function clearCart() {
+        if (confirm('Are you sure you want to clear your cart?')) {
+            localStorage.removeItem('villainCart');
+            loadCartItems();
+            updateCartCount();
+            showNotification('Cart cleared', 'info');
+        }
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCartItems();
+        updateCartCount();
+    });
+</script>
+{% endblock %}
+{% endblock %}

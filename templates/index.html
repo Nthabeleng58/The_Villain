@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Home - The Villain Food-App{% endblock %}
+
+{% block content %}
+{% if session.get('user_id') %}
+    {% set user_logged_in = True %}
+{% else %}
+    {% set user_logged_in = False %}
+{% endif %}
+<div class="dashboard">
+    <!-- Hero Section -->
+    <section class="hero-section" style="text-align: center; padding: 3rem 0;">
+        <h1 style="font-size: 2.5rem; color: var(--primary-purple); margin-bottom: 1rem;">
+            Welcome to The Villain Food-App
+        </h1>
+        <p style="font-size: 1.2rem; color: var(--text-gray); margin-bottom: 2rem;">
+            Discover dark-themed culinary experiences powered by cutting-edge technology
+        </p>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('auth.login') }}" class="btn-primary" style="padding: 1rem 2rem;">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            <a href="{{ url_for('auth.register') }}" class="btn-login" style="padding: 1rem 2rem;">
+                <i class="fas fa-user-plus"></i> Register
+            </a>
+        </div>
+    </section>
+
+    <!-- Features Overview -->
+    <section class="dashboard-section">
+        <h2 class="section-title">Why Choose The Villain?</h2>
+        <div class="restaurant-grid">
+            <a href="{% if user_logged_in %}{{ url_for('customer.dashboard') }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="feature-highlight feature-link">
+                <div class="feature-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3>Fast Delivery</h3>
+                <p>Average delivery time under 30 minutes</p>
+                <div class="feature-action">
+                    <span>Explore <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </a>
+            
+            <a href="{% if user_logged_in %}{{ url_for('customer.secure_orders') }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="feature-highlight feature-link">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Secure Orders</h3>
+                <p>Blockchain-protected transaction history</p>
+                <div class="feature-action">
+                    <span>View Security <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </a>
+            
+            <a href="{% if user_logged_in %}{{ url_for('customer.dashboard') }}#ai-recommendations{% else %}{{ url_for('auth.login') }}{% endif %}" class="feature-highlight feature-link">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>AI Recommendations</h3>
+                <p>Personalized suggestions just for you</p>
+                <div class="feature-action">
+                    <span>Get Recommendations <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </a>
+            
+            <a href="{% if user_logged_in %}{{ url_for('gdpr.view_my_data') }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="feature-highlight feature-link">
+                <div class="feature-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h3>Privacy First</h3>
+                <p>GDPR compliant data protection</p>
+                <div class="feature-action">
+                    <span>Manage Privacy <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </a>
+        </div>
+    </section>
+</div>
+
+<style>
+    .feature-highlight {
+        background: var(--card-bg);
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        display: block;
+    }
+    
+    .feature-link {
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .feature-highlight:hover {
+        transform: translateY(-5px);
+        background: rgba(139, 95, 191, 0.1);
+        border: 1px solid var(--primary-purple);
+    }
+    
+    .feature-icon {
+        font-size: 2.5rem;
+        color: var(--primary-purple);
+        margin-bottom: 1rem;
+    }
+    
+    .feature-highlight h3 {
+        color: var(--text-light);
+        margin-bottom: 0.5rem;
+    }
+    
+    .feature-highlight p {
+        color: var(--text-gray);
+        margin-bottom: 1rem;
+    }
+    
+    .feature-action {
+        color: var(--primary-purple);
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-top: 1rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .feature-highlight:hover .feature-action {
+        opacity: 1;
+    }
+    
+    .feature-action i {
+        margin-left: 0.5rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .feature-highlight:hover .feature-action i {
+        transform: translateX(5px);
+    }
+</style>
+{% endblock %}

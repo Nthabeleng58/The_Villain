@@ -1,0 +1,7 @@
+Control,Evidence,Status,Owner
+Right to Access,/gdpr/my-data portal,Compliant,Data Protection Officer
+Right to Portability,/gdpr/export-my-data JSON export,Compliant,Platform Engineering
+Right to Erasure,/gdpr/delete-account anonymisation,Compliant,Security Team
+Consent Management,Privacy toggles + audit log,Partially compliant,Product
+Data Breach Notice,Runbook + incident template,Planned,Security Team
+

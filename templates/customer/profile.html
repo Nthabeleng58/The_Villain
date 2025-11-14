@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - The Villain Food-App{% endblock %}
+
+{% block content %}
+<div class="profile-page" style="max-width: 800px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--text-light); margin-bottom: 0.5rem;">My Profile</h1>
+        <p style="color: var(--text-gray);">Manage your account information</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+        <!-- Profile Sidebar -->
+        <div class="profile-sidebar">
+            <div style="background: var(--card-bg); padding: 2rem; border-radius: var(--border-radius); text-align: center; margin-bottom: 1rem;">
+                <div style="width: 100px; height: 100px; background: var(--primary-purple); border-radius: 50%; margin: 0 auto 1rem auto; 
+                     display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white;">
+                    {{ user.name[0] if user.name else 'U' }}
+                </div>
+                <h3 style="color: var(--text-light); margin-bottom: 0.5rem;">{{ user.name }}</h3>
+                <p style="color: var(--text-gray); margin-bottom: 0.25rem;">{{ user.email }}</p>
+                <p style="color: var(--text-gray); font-size: 0.9rem;">Member since {{ user.created_at.strftime('%b %Y') }}</p>
+            </div>
+            
+            <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius);">
+                <h4 style="color: var(--text-light); margin-bottom: 1rem;">Quick Actions</h4>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <a href="{{ url_for('customer.orders') }}" class="profile-link">
+                        <i class="fas fa-list"></i> My Orders
+                    </a>
+                    <a href="{{ url_for('gdpr.view_my_data') }}" class="profile-link">
+                        <i class="fas fa-shield-alt"></i> Privacy & Data
+                    </a>
+                    <a href="#" class="profile-link">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="{{ url_for('auth.logout') }}" class="profile-link" style="color: var(--accent-red);">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Content -->
+        <div class="profile-content">
+            <!-- Personal Information -->
+            <div style="background: var(--card-bg); padding: 2rem; border-radius: var(--border-radius); margin-bottom: 1rem;">
+                <h2 style="color: var(--text-light); margin-bottom: 1.5rem;">Personal Information</h2>
+                
+                <form id="profile-form">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="profile_first_name">First Name</label>
+                            <input type="text" class="form-input" id="profile_first_name" name="first_name" 
+                                   value="{{ user.name.split(' ')[0] if user.name }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="profile_last_name">Last Name</label>
+                            <input type="text" class="form-input" id="profile_last_name" name="last_name" 
+                                   value="{{ user.name.split(' ')[1] if user.name and user.name.split(' ')|length > 1 }}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="profile_email">Email Address</label>
+                        <input type="email" class="form-input" id="profile_email" name="email" 
+                               value="{{ user.email }}" readonly style="background: #444; color: var(--text-gray);">
+                        <div style="font-size: 0.8rem; color: var(--text-gray); margin-top: 0.25rem;">
+                            Contact support to change email
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-label" for="profile_phone">Phone Number</label>
+                        <input type="tel" class="form-input" id="profile_phone" name="phone" 
+                               value="{{ user.phone or '' }}" placeholder="Enter your phone number">
+                    </div>
+                    
+                    <button type="button" class="btn-primary" onclick="updateProfile()">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </form>
+            </div>
+
+            <!-- Security Settings -->
+            <div style="background: var(--card-bg); padding: 2rem; border-radius: var(--border-radius); margin-bottom: 1rem;">
+                <h2 style="color: var(--text-light); margin-bottom: 1.5rem;">Security</h2>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--text-light); margin-bottom: 0.5rem;">Change Password</h4>
+                    <form id="password-form">
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label class="form-label" for="current_password">Current Password</label>
+                            <input type="password" class="form-input" id="current_password" name="current_password">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label class="form-label" for="new_password">New Password</label>
+                            <input type="password" class="form-input" id="new_password" name="new_password">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label class="form-label" for="confirm_password">Confirm New Password</label>
+                            <input type="password" class="form-input" id="confirm_password" name="confirm_password">
+                        </div>
+                        
+                        <button type="button" class="btn-primary" onclick="changePassword()">
+                            <i class="fas fa-lock"></i> Update Password
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Preferences -->
+            <div style="background: var(--card-bg); padding: 2rem; border-radius: var(--border-radius);">
+                <h2 style="color: var(--text-light); margin-bottom: 1.5rem;">Preferences</h2>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--text-light); margin-bottom: 1rem;">Notification Settings</h4>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-light); cursor: pointer;">
+                            <input type="checkbox" checked style="margin: 0;">
+                            <span>Order updates and status changes</span>
+                        </label>
+                        
+                        <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-light); cursor: pointer;">
+                            <input type="checkbox" checked style="margin: 0;">
+                            <span>Promotional offers and discounts</span>
+                        </label>
+                        
+                        <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-light); cursor: pointer;">
+                            <input type="checkbox" style="margin: 0;">
+                            <span>Newsletter and updates</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button class="btn-primary">
+                    <i class="fas fa-bell"></i> Save Preferences
+                </button>
+            </div>
+
+            <!-- Danger Zone -->
+            <div style="background: var(--card-bg); padding: 2rem; border-radius: var(--border-radius); margin-top: 1rem; border: 1px solid var(--accent-red);">
+                <h2 style="color: var(--accent-red); margin-bottom: 1rem;">Danger Zone</h2>
+                <p style="color: var(--text-gray); margin-bottom: 1.5rem;">
+                    Once you delete your account, there is no going back. Please be certain.
+                </p>
+                
+                <button class="btn-danger" onclick="deleteAccount()">
+                    <i class="fas fa-trash"></i> Delete My Account
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-link {
+        color: var(--text-light);
+        text-decoration: none;
+        padding: 0.75rem 1rem;
+        border-radius: var(--border-radius);
+        transition: background 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .profile-link:hover {
+        background: rgba(139, 95, 191, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+        .profile-page > div {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+{% block scripts %}
+<script>
+    function updateProfile() {
+        const form = document.getElementById('profile-form');
+        const formData = new FormData(form);
+        
+        // Show loading state
+        const submitBtn = form.querySelector('.btn-primary');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        submitBtn.disabled = true;
+        
+        // Simulate API call
+        setTimeout(() => {
+            showNotification('Profile updated successfully!', 'success');
+            
+            // Reset button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 1500);
+    }
+    
+    function changePassword() {
+        const form = document.getElementById('password-form');
+        const currentPassword = document.getElementById('current_password').value;
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            showNotification('Please fill in all password fields', 'error');
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            showNotification('New passwords do not match', 'error');
+            return;
+        }
+        
+        if (newPassword.length < 8) {
+            showNotification('Password must be at least 8 characters long', 'error');
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = form.querySelector('.btn-primary');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+        submitBtn.disabled = true;
+        
+        // Simulate API call
+        setTimeout(() => {
+            showNotification('Password updated successfully!', 'success');
+            
+            // Clear form
+            form.reset();
+            
+            // Reset button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 1500);
+    }
+    
+    function deleteAccount() {
+        if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+            if (confirm('This will permanently delete all your data. Are you absolutely sure?')) {
+                showNotification('Deleting account...', 'info');
+                
+                // Simulate API call
+                setTimeout(() => {
+                    showNotification('Account deleted successfully', 'success');
+                    
+                    // Redirect to home page
+                    setTimeout(() => {
+                        window.location.href = "{{ url_for('auth.logout') }}";
+                    }, 1000);
+                }, 2000);
+            }
+        }
+    }
+</script>
+{% endblock %}
+{% endblock %}

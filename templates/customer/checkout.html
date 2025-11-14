@@ -1,0 +1,739 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - The Villain Food-App{% endblock %}
+
+{% block content %}
+<div class="checkout-page" style="max-width: 1000px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--text-light); margin-bottom: 0.5rem;">Checkout</h1>
+        <p style="color: var(--text-gray);">Complete your order</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+        <!-- Checkout Form -->
+        <div class="checkout-form">
+            <div style="background: var(--card-bg); padding: 2rem; border-radius: var(--border-radius); margin-bottom: 1rem;">
+                <h2 style="color: var(--text-light); margin-bottom: 1.5rem;">Delivery Information</h2>
+                
+                <form id="checkout-form">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="first_name">First Name</label>
+                            <input type="text" class="form-input" id="first_name" name="first_name" required 
+                                   value="{{ session.get('name', '').split(' ')[0] if session.get('name') }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="last_name">Last Name</label>
+                            <input type="text" class="form-input" id="last_name" name="last_name" required 
+                                   value="{{ session.get('name', '').split(' ')[1] if session.get('name') and session.get('name').split(' ')|length > 1 }}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="email">Email</label>
+                        <input type="email" class="form-input" id="email" name="email" required 
+                               value="{{ session.get('email', '') }}">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="phone">Phone Number</label>
+                        <input type="tel" class="form-input" id="phone" name="phone" required 
+                               placeholder="Enter your phone number">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="address">Delivery Address</label>
+                        <textarea class="form-input" id="address" name="address" required 
+                                  placeholder="Enter your complete delivery address" 
+                                  style="min-height: 80px; resize: vertical;"></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="instructions">Delivery Instructions (Optional)</label>
+                        <textarea class="form-input" id="instructions" name="instructions" 
+                                  placeholder="Any special instructions for delivery?" 
+                                  style="min-height: 60px; resize: vertical;"></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Payment Method -->
+            <div style="background: var(--card-bg); padding: 2rem; border-radius: var(--border-radius);">
+                <h2 style="color: var(--text-light); margin-bottom: 1.5rem;">Payment Method</h2>
+                
+                <div class="payment-methods" style="margin-bottom: 1.5rem;">
+                    <div class="payment-option" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid #444; border-radius: var(--border-radius); margin-bottom: 1rem; cursor: pointer;">
+                        <input type="radio" id="card-payment" name="payment_method" value="card" checked style="margin: 0;">
+                        <label for="card-payment" style="margin: 0; color: var(--text-light); cursor: pointer; flex: 1;">
+                            <i class="fas fa-credit-card"></i> Credit/Debit Card
+                        </label>
+                    </div>
+                    
+                    <div class="payment-option" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid #444; border-radius: var(--border-radius); cursor: pointer;">
+                        <input type="radio" id="cash-payment" name="payment_method" value="cash" style="margin: 0;">
+                        <label for="cash-payment" style="margin: 0; color: var(--text-light); cursor: pointer; flex: 1;">
+                            <i class="fas fa-money-bill"></i> Cash on Delivery
+                        </label>
+                    </div>
+                    
+                    <div class="payment-option" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid #444; border-radius: var(--border-radius); cursor: pointer;">
+                        <input type="radio" id="crypto-payment" name="payment_method" value="crypto" style="margin: 0;">
+                        <label for="crypto-payment" style="margin: 0; color: var(--text-light); cursor: pointer; flex: 1;">
+                            <i class="fab fa-ethereum"></i> Pay with Crypto (MetaMask)
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- MetaMask Wallet Section -->
+                <div id="metamask-section" style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: rgba(139, 95, 191, 0.1); border-radius: var(--border-radius);">
+                    <div id="metamask-status" style="margin-bottom: 1rem;">
+                        <p style="color: var(--text-gray); margin-bottom: 0.5rem;">
+                            <i class="fas fa-wallet"></i> Wallet Status: <span id="wallet-status">Not Connected</span>
+                        </p>
+                        <div id="wallet-info" style="display: none;">
+                            <p style="color: var(--text-light); font-size: 0.9rem; margin: 0.25rem 0;">
+                                Address: <span id="wallet-address" style="font-family: monospace;"></span>
+                            </p>
+                            <p style="color: var(--text-light); font-size: 0.9rem; margin: 0.25rem 0;">
+                                Balance: <span id="wallet-balance">0</span> ETH
+                            </p>
+                        </div>
+                    </div>
+                    <button type="button" id="connect-metamask-btn" class="btn-primary" style="width: 100%;">
+                        <i class="fab fa-ethereum"></i> Connect MetaMask Wallet
+                    </button>
+                    <div id="metamask-error" style="display: none; margin-top: 1rem; padding: 0.75rem; background: rgba(255, 71, 87, 0.1); border-radius: 4px; color: #FF4757; font-size: 0.9rem;"></div>
+                </div>
+
+                <!-- Card Details (shown when card payment selected) -->
+                <div id="card-details">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="card_number">Card Number</label>
+                            <input type="text" class="form-input" id="card_number" name="card_number" 
+                                   placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cvv">CVV</label>
+                            <input type="text" class="form-input" id="cvv" name="cvv" 
+                                   placeholder="123" maxlength="3">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="expiry_month">Expiry Month</label>
+                            <select class="form-input" id="expiry_month" name="expiry_month">
+                                <option value="">Month</option>
+                                {% for month in range(1, 13) %}
+                                <option value="{{ '%02d' % month }}">{{ month }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="expiry_year">Expiry Year</label>
+                            <select class="form-input" id="expiry_year" name="expiry_year">
+                                <option value="">Year</option>
+                                {% for year in range(2024, 2035) %}
+                                <option value="{{ year }}">{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); position: sticky; top: 2rem;">
+                <h3 style="color: var(--text-light); margin-bottom: 1rem;">Order Summary</h3>
+                
+                <div id="checkout-items">
+                    <!-- Items will be populated by JavaScript -->
+                </div>
+                
+                <div style="border-top: 1px solid #444; padding-top: 1rem; margin-top: 1rem;">
+                    <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
+                        <span style="color: var(--text-gray);">Subtotal:</span>
+                        <span id="checkout-subtotal" style="color: var(--text-light);">M0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
+                        <span style="color: var(--text-gray);">Delivery Fee:</span>
+                        <span style="color: var(--text-light);">M2.99</span>
+                    </div>
+                    <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
+                        <span style="color: var(--text-gray);">Tax:</span>
+                        <span id="checkout-tax" style="color: var(--text-light);">M0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: between; font-weight: bold; font-size: 1.1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #444;">
+                        <span style="color: var(--text-light);">Total:</span>
+                        <span id="checkout-total" style="color: var(--primary-purple);">M0.00</span>
+                    </div>
+                </div>
+                
+                <button class="btn-primary" style="width: 100%; margin-top: 1.5rem; padding: 1rem;" onclick="placeOrder()">
+                    <i class="fas fa-shopping-bag"></i> Place Order
+                </button>
+                
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="{{ url_for('customer.cart') }}" style="color: var(--text-gray); text-decoration: none;">
+                        <i class="fas fa-arrow-left"></i> Back to Cart
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .checkout-item {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #444;
+    }
+    
+    .checkout-item:last-child {
+        border-bottom: none;
+    }
+    
+    .item-info {
+        flex: 1;
+    }
+    
+    .item-name {
+        color: var(--text-light);
+        font-weight: 500;
+    }
+    
+    .item-quantity {
+        color: var(--text-gray);
+        font-size: 0.9rem;
+    }
+    
+    .item-price {
+        color: var(--primary-purple);
+        font-weight: bold;
+    }
+    
+    .restaurant-section {
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-purple);
+    }
+    
+    .restaurant-name {
+        color: var(--text-light);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .checkout-page > div {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+{% block scripts %}
+<script>
+    function loadCheckoutItems() {
+        const cart = JSON.parse(localStorage.getItem('villainCart')) || [];
+        const container = document.getElementById('checkout-items');
+        
+        if (cart.length === 0) {
+            container.innerHTML = '<div style="color: var(--text-gray); text-align: center; padding: 1rem;">Your cart is empty</div>';
+            return;
+        }
+        
+        let itemsHTML = '';
+        let subtotal = 0;
+        
+        // Group items by restaurant
+        const restaurants = {};
+        cart.forEach(item => {
+            if (!restaurants[item.restaurant_id]) {
+                restaurants[item.restaurant_id] = {
+                    name: item.restaurant_name,
+                    items: []
+                };
+            }
+            restaurants[item.restaurant_id].items.push(item);
+        });
+        
+        // Display items by restaurant
+        Object.values(restaurants).forEach(restaurant => {
+            itemsHTML += `
+                <div class="restaurant-section">
+                    <div class="restaurant-name">
+                        <i class="fas fa-store"></i> ${restaurant.name}
+                    </div>
+            `;
+            
+            restaurant.items.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                itemsHTML += `
+                    <div class="checkout-item">
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-quantity">Qty: ${item.quantity}</div>
+                        </div>
+                            <div class="item-price">M${itemTotal.toFixed(2)}</div>
+                    </div>
+                `;
+            });
+            
+            itemsHTML += '</div>';
+        });
+        
+        container.innerHTML = itemsHTML;
+        updateCheckoutSummary(subtotal);
+    }
+    
+    function updateCheckoutSummary(subtotal) {
+        const taxRate = 0.08; // 8% tax
+        const deliveryFee = 2.99;
+        const tax = subtotal * taxRate;
+        const total = subtotal + deliveryFee + tax;
+        
+        document.getElementById('checkout-subtotal').textContent = `M${subtotal.toFixed(2)}`;
+        document.getElementById('checkout-tax').textContent = `M${tax.toFixed(2)}`;
+        document.getElementById('checkout-total').textContent = `M${total.toFixed(2)}`;
+    }
+    
+    async function placeOrder() {
+        const cart = JSON.parse(localStorage.getItem('villainCart')) || [];
+        
+        if (cart.length === 0) {
+            showNotification('Your cart is empty', 'error');
+            return;
+        }
+        
+        // Validate form
+        const form = document.getElementById('checkout-form');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        // Get form data
+        const formData = new FormData(form);
+        const address = formData.get('address');
+        const instructions = formData.get('instructions') || '';
+        
+        // Get payment method (with error handling)
+        const paymentMethodRadio = document.querySelector('input[name="payment_method"]:checked');
+        if (!paymentMethodRadio) {
+            showNotification('Please select a payment method', 'error');
+            return;
+        }
+        const payment_method = paymentMethodRadio.value;
+        
+        // Group cart items by restaurant
+        let ordersToPlace = {};
+        cart.forEach(item => {
+            if (!ordersToPlace[item.restaurant_id]) {
+                ordersToPlace[item.restaurant_id] = {
+                    restaurant_id: item.restaurant_id,
+                    items: [],
+                    total_amount: 0
+                };
+            }
+            ordersToPlace[item.restaurant_id].items.push({
+                menu_item_id: item.id,
+                quantity: item.quantity,
+                price: item.price
+            });
+            ordersToPlace[item.restaurant_id].total_amount += item.price * item.quantity;
+        });
+        
+        // Show loading state
+        const submitBtn = document.querySelector('.btn-primary');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing Order...';
+        submitBtn.disabled = true;
+        
+        // Handle crypto payment
+        if (payment_method === 'crypto') {
+            if (!window.metaMask || !window.metaMask.isConnected || !window.metaMask.account) {
+                showNotification('Please connect your MetaMask wallet first', 'error');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                return;
+            }
+            
+            // Calculate total amount for crypto payment
+            const totalAmount = Object.values(ordersToPlace).reduce((sum, order) => {
+                const deliveryFee = 2.99;
+                const taxRate = 0.08;
+                const tax = order.total_amount * taxRate;
+                return sum + order.total_amount + deliveryFee + tax;
+            }, 0);
+            
+            // Get restaurant address (for now, use a default or fetch from backend)
+            const restaurantAddress = '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb'; // Example address - should come from backend
+            
+            // Convert total to ETH (assuming 1 M = 0.001 ETH for demo)
+            const amountInEth = totalAmount * 0.001;
+            
+            try {
+                showNotification('Processing crypto payment...', 'info');
+                const paymentResult = await window.metaMask.sendPayment(
+                    restaurantAddress,
+                    amountInEth,
+                    null // order ID will be set after order creation
+                );
+                
+                if (!paymentResult.success) {
+                    showNotification(`Payment failed: ${paymentResult.error}`, 'error');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+                
+                showNotification(`Payment successful! Transaction: ${paymentResult.txHash.slice(0, 10)}...`, 'success');
+                
+                // Wait for transaction confirmation (non-blocking)
+                window.metaMask.waitForTransaction(paymentResult.txHash).then(() => {
+                    showNotification('Payment confirmed on blockchain!', 'success');
+                }).catch(error => {
+                    console.warn('Transaction confirmation timeout, but continuing...', error);
+                });
+            } catch (error) {
+                showNotification(`Crypto payment error: ${error.message}`, 'error');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                return;
+            }
+        }
+        
+        try {
+            // Create orders for each restaurant
+            let allOrdersSuccessful = true;
+            let createdOrderIds = [];
+            
+            for (const restaurantId in ordersToPlace) {
+                const orderData = ordersToPlace[restaurantId];
+                const deliveryFee = 2.99;
+                const taxRate = 0.08;
+                const tax = orderData.total_amount * taxRate;
+                const totalAmount = orderData.total_amount + deliveryFee + tax;
+                
+                // Create order
+                const createResponse = await fetch("{{ url_for('order.create_order') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        restaurant_id: orderData.restaurant_id,
+                        items: orderData.items,
+                        delivery_address: address,
+                        special_instructions: instructions,
+                        payment_method: payment_method,
+                        total_amount: totalAmount,
+                        crypto_tx_hash: payment_method === 'crypto' && window.metaMask && window.metaMask.lastTxHash ? window.metaMask.lastTxHash : null
+                    })
+                });
+                
+                if (!createResponse.ok) {
+                    const errorText = await createResponse.text();
+                    console.error('Order creation failed:', errorText);
+                    allOrdersSuccessful = false;
+                    showNotification(`Failed to place order: ${createResponse.statusText}`, 'error');
+                    continue;
+                }
+                
+                const createResult = await createResponse.json();
+                
+                if (createResult.success) {
+                    createdOrderIds.push(createResult.order_id);
+                    
+                    // Mark order as delivered and add to blockchain
+                    try {
+                        const completeUrl = `{{ url_for('order.complete_order', order_id=0) }}`.replace('0', createResult.order_id);
+                        const completeResponse = await fetch(completeUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        });
+                        
+                        if (completeResponse.ok) {
+                            const completeResult = await completeResponse.json();
+                            if (!completeResult.success) {
+                                console.warn(`Order ${createResult.order_id} created but blockchain update failed:`, completeResult.message);
+                            }
+                        } else {
+                            console.warn(`Order ${createResult.order_id} created but could not complete:`, completeResponse.statusText);
+                        }
+                    } catch (completeError) {
+                        console.warn(`Order ${createResult.order_id} created but blockchain update error:`, completeError);
+                        // Don't fail the order if blockchain update fails
+                    }
+                } else {
+                    allOrdersSuccessful = false;
+                    showNotification(`Failed to place order: ${createResult.message || 'Unknown error'}`, 'error');
+                }
+            }
+            
+            if (allOrdersSuccessful && createdOrderIds.length > 0) {
+                // Clear cart
+                localStorage.removeItem('villainCart');
+                updateCartCount();
+                
+                // Show success message
+                showNotification('Order placed! Blockchain updated and GDPR data refreshed.', 'success');
+                
+                // Redirect to orders page
+                setTimeout(() => {
+                    window.location.href = "{{ url_for('customer.orders') }}";
+                }, 2000);
+            } else {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+            
+        } catch (error) {
+            console.error('Error placing order:', error);
+            showNotification('Error placing order. Please try again.', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+    
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('villainCart')) || [];
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const cartCount = document.querySelector('.cart-count');
+        if (cartCount) {
+            cartCount.textContent = totalItems;
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        // Remove existing notifications
+        const existing = document.querySelector('.notification');
+        if (existing) {
+            existing.remove();
+        }
+        
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease-out;
+        `;
+        
+        // Set color based on type
+        if (type === 'success') {
+            notification.style.background = '#4CAF50';
+        } else if (type === 'error') {
+            notification.style.background = '#FF4757';
+        } else {
+            notification.style.background = 'var(--primary-purple)';
+        }
+        
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    }
+    
+    // Add CSS animations
+    if (!document.querySelector('#notification-styles')) {
+        const style = document.createElement('style');
+        style.id = 'notification-styles';
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Toggle card details and MetaMask based on payment method
+    document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const cardDetails = document.getElementById('card-details');
+            const metamaskSection = document.getElementById('metamask-section');
+            
+            if (this.value === 'card') {
+                cardDetails.style.display = 'block';
+                metamaskSection.style.display = 'none';
+                // Make card fields required
+                document.getElementById('card_number').required = true;
+                document.getElementById('cvv').required = true;
+                document.getElementById('expiry_month').required = true;
+                document.getElementById('expiry_year').required = true;
+            } else if (this.value === 'crypto') {
+                cardDetails.style.display = 'none';
+                metamaskSection.style.display = 'block';
+                // Make card fields not required
+                document.getElementById('card_number').required = false;
+                document.getElementById('cvv').required = false;
+                document.getElementById('expiry_month').required = false;
+                document.getElementById('expiry_year').required = false;
+                // Check MetaMask connection
+                checkMetaMaskConnection();
+            } else {
+                cardDetails.style.display = 'none';
+                metamaskSection.style.display = 'none';
+                // Make card fields not required
+                document.getElementById('card_number').required = false;
+                document.getElementById('cvv').required = false;
+                document.getElementById('expiry_month').required = false;
+                document.getElementById('expiry_year').required = false;
+            }
+        });
+    });
+    
+    // MetaMask Integration
+    async function checkMetaMaskConnection() {
+        if (typeof window.metaMask === 'undefined') {
+            // Load MetaMask script if not loaded
+            const script = document.createElement('script');
+            script.src = "{{ url_for('static', filename='js/metamask.js') }}";
+            document.head.appendChild(script);
+            script.onload = () => initMetaMask();
+        } else {
+            initMetaMask();
+        }
+    }
+    
+    async function initMetaMask() {
+        const connectBtn = document.getElementById('connect-metamask-btn');
+        const walletStatus = document.getElementById('wallet-status');
+        const walletInfo = document.getElementById('wallet-info');
+        const walletAddress = document.getElementById('wallet-address');
+        const walletBalance = document.getElementById('wallet-balance');
+        const errorDiv = document.getElementById('metamask-error');
+        
+        // Check if MetaMask is installed
+        const hasMetaMask = await window.metaMask.checkMetaMask();
+        if (!hasMetaMask) {
+            connectBtn.innerHTML = '<i class="fas fa-download"></i> Install MetaMask';
+            connectBtn.onclick = () => {
+                window.open('https://metamask.io/download/', '_blank');
+            };
+            walletStatus.textContent = 'MetaMask Not Installed';
+            walletStatus.style.color = '#FF4757';
+            return;
+        }
+        
+        // Check if already connected
+        const account = await window.metaMask.getAccount();
+        if (account) {
+            updateWalletUI(account);
+        } else {
+            connectBtn.innerHTML = '<i class="fab fa-ethereum"></i> Connect MetaMask Wallet';
+            connectBtn.onclick = connectMetaMask;
+            walletStatus.textContent = 'Not Connected';
+            walletStatus.style.color = '#FFA500';
+        }
+    }
+    
+    async function connectMetaMask() {
+        const connectBtn = document.getElementById('connect-metamask-btn');
+        const errorDiv = document.getElementById('metamask-error');
+        
+        connectBtn.disabled = true;
+        connectBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+        errorDiv.style.display = 'none';
+        
+        const result = await window.metaMask.connectWallet();
+        
+        if (result.success) {
+            await updateWalletUI(result.account);
+            showNotification('MetaMask wallet connected successfully!', 'success');
+        } else {
+            errorDiv.textContent = result.error;
+            errorDiv.style.display = 'block';
+            connectBtn.disabled = false;
+            connectBtn.innerHTML = '<i class="fab fa-ethereum"></i> Connect MetaMask Wallet';
+        }
+    }
+    
+    async function updateWalletUI(account) {
+        const connectBtn = document.getElementById('connect-metamask-btn');
+        const walletStatus = document.getElementById('wallet-status');
+        const walletInfo = document.getElementById('wallet-info');
+        const walletAddress = document.getElementById('wallet-address');
+        const walletBalance = document.getElementById('wallet-balance');
+        
+        walletStatus.textContent = 'Connected';
+        walletStatus.style.color = '#4CAF50';
+        walletAddress.textContent = window.metaMask.formatAddress(account);
+        walletInfo.style.display = 'block';
+        
+        const balance = await window.metaMask.getBalance();
+        if (balance !== null) {
+            walletBalance.textContent = balance.toFixed(4);
+        }
+        
+        connectBtn.innerHTML = '<i class="fas fa-check-circle"></i> Wallet Connected';
+        connectBtn.disabled = true;
+        connectBtn.style.background = '#4CAF50';
+    }
+    
+    // Format card number
+    document.getElementById('card_number').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        let matches = value.match(/\d{4,16}/g);
+        let match = matches && matches[0] || '';
+        let parts = [];
+        
+        for (let i = 0; i < match.length; i += 4) {
+            parts.push(match.substring(i, i + 4));
+        }
+        
+        if (parts.length) {
+            e.target.value = parts.join(' ');
+        } else {
+            e.target.value = value;
+        }
+    });
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCheckoutItems();
+        updateCartCount();
+    });
+</script>
+{% endblock %}
+{% endblock %}

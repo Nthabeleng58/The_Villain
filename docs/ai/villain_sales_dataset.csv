@@ -1,0 +1,12 @@
+date,restaurant_id,restaurant_name,cuisine_type,total_sales,order_count
+2024-01-01,1,Dark Knight Diner,Burger,845.23,42
+2024-01-01,2,Villainous Vegan,Vegan,612.45,30
+2024-01-02,1,Dark Knight Diner,Burger,910.11,46
+2024-01-02,3,Sinister Sushi,Asian,702.90,37
+2024-01-03,4,Evil Burger Empire,Burger,780.55,39
+2024-01-03,5,Wicked Wings,American,655.10,34
+2024-01-04,2,Villainous Vegan,Vegan,640.75,32
+2024-01-04,6,Malicious Mexican,Mexican,705.88,36
+2024-01-05,3,Sinister Sushi,Asian,750.34,38
+2024-01-05,4,Evil Burger Empire,Burger,799.02,40
+

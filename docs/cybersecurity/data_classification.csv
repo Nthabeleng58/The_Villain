@@ -1,0 +1,8 @@
+Data Asset,Description,Classification,Storage,Access Roles
+User Profiles,Name email phone delivery details,Confidential,mysql.users encrypted backups,customer;admin
+Payment Tokens,3rd party payment references only,Restricted,Secure PSP vault hashed refs,admin
+Restaurant Menus,Menu items pricing availability,Public,mysql.menu_items CDN cache,customer;restaurant;admin
+Order Ledger,Order totals status blockchain hash,Private,mysql.orders + blockchain_records,restaurant;admin
+AI Training Dataset,Anonymised sales aggregates,Private,docs/ai/villain_sales_dataset.csv,admin
+Security Config,Role permissions classification spreadsheets,Restricted,docs/cybersecurity/,admin
+

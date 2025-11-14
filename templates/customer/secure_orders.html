@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Secure Orders - Blockchain Protected - The Villain Food-App{% endblock %}
+
+{% block content %}
+<div class="secure-orders-page" style="max-width: 1200px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--text-light); margin-bottom: 0.5rem;">
+            <i class="fas fa-shield-alt" style="color: var(--primary-purple);"></i> Secure Orders
+        </h1>
+        <p style="color: var(--text-gray);">Your blockchain-protected transaction history</p>
+    </div>
+
+    <!-- Blockchain Integrity Status -->
+    <div class="integrity-card" style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 2rem; border-left: 4px solid {% if integrity_status %}#4CAF50{% else %}#FF4757{% endif %};">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="font-size: 2rem;">
+                {% if integrity_status %}
+                <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
+                {% else %}
+                <i class="fas fa-exclamation-triangle" style="color: #FF4757;"></i>
+                {% endif %}
+            </div>
+            <div>
+                <h3 style="color: var(--text-light); margin: 0 0 0.25rem 0;">
+                    Blockchain Status: {% if integrity_status %}Verified{% else %}Warning{% endif %}
+                </h3>
+                <p style="color: var(--text-gray); margin: 0;">{{ integrity_message }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders List -->
+    <div class="orders-list">
+        {% if orders %}
+            {% for order in orders %}
+            <div class="order-card" style="background: var(--card-bg); border-radius: var(--border-radius); margin-bottom: 1.5rem; overflow: hidden; border: 1px solid {% if order.current_hash %}#4CAF50{% else %}#FFA500{% endif %};">
+                <!-- Order Header -->
+                <div style="padding: 1.5rem; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h3 style="color: var(--text-light); margin: 0 0 0.5rem 0;">
+                            {{ order.restaurant_name }}
+                        </h3>
+                        <div style="display: flex; gap: 1rem; color: var(--text-gray); font-size: 0.9rem; flex-wrap: wrap;">
+                            <span>Order #{{ order.id }}</span>
+                            <span>•</span>
+                            <span>Total: M{{ "%.2f"|format(order.total_amount) }}</span>
+                            <span>•</span>
+                            <span>
+                                {% if order.created_at %}
+                                    {% set created_str = order.created_at|string %}
+                                    {{ created_str[:10] if created_str|length > 10 else created_str }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div>
+                        {% if order.current_hash %}
+                        <span style="background: #4CAF50; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500;">
+                            <i class="fas fa-link"></i> On Blockchain
+                        </span>
+                        {% else %}
+                        <span style="background: #FFA500; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500;">
+                            <i class="fas fa-clock"></i> Pending
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Blockchain Details -->
+                {% if order.current_hash %}
+                <div style="padding: 1.5rem; background: rgba(76, 175, 80, 0.1);">
+                    <h4 style="color: var(--text-light); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-link" style="color: #4CAF50;"></i> Blockchain Record
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-family: monospace; font-size: 0.85rem;">
+                        <div>
+                            <div style="color: var(--text-gray); margin-bottom: 0.25rem;">Block Hash:</div>
+                            <div style="color: var(--text-light); word-break: break-all;">{{ order.current_hash[:32] }}...</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-gray); margin-bottom: 0.25rem;">Previous Hash:</div>
+                            <div style="color: var(--text-light); word-break: break-all;">{{ order.previous_hash[:32] if order.previous_hash else 'Genesis' }}...</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-gray); margin-bottom: 0.25rem;">Blockchain Timestamp:</div>
+                            <div style="color: var(--text-light);">
+                                {% if order.blockchain_timestamp %}
+                                    {{ order.blockchain_timestamp[:19] if order.blockchain_timestamp|length > 19 else order.blockchain_timestamp }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-gray); margin-bottom: 0.25rem;">Status:</div>
+                            <div style="color: #4CAF50; font-weight: 600;">
+                                <i class="fas fa-check-circle"></i> Immutable & Verified
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div style="padding: 1.5rem; background: rgba(255, 165, 0, 0.1);">
+                    <p style="color: var(--text-gray); margin: 0;">
+                        <i class="fas fa-info-circle"></i> This order will be added to the blockchain when it's delivered.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; padding: 3rem; color: var(--text-gray);">
+                <i class="fas fa-shield-alt" style="font-size: 4rem; margin-bottom: 1rem; color: var(--primary-purple);"></i>
+                <h3>No Secure Orders Yet</h3>
+                <p>Your delivered orders will appear here with blockchain protection</p>
+                <a href="{{ url_for('customer.dashboard') }}" class="btn-primary" style="margin-top: 1rem; text-decoration: none; display: inline-block;">
+                    <i class="fas fa-utensils"></i> Browse Restaurants
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Information Section -->
+    <div style="background: var(--card-bg); padding: 2rem; border-radius: var(--border-radius); margin-top: 2rem;">
+        <h3 style="color: var(--text-light); margin-bottom: 1rem;">
+            <i class="fas fa-info-circle" style="color: var(--primary-purple);"></i> How Blockchain Protection Works
+        </h3>
+        <div style="color: var(--text-gray); line-height: 1.8;">
+            <p><strong>Immutable Records:</strong> Once your order is delivered, it's permanently recorded on our blockchain ledger. This means the transaction cannot be altered or deleted.</p>
+            <p><strong>Transparency:</strong> Each order is linked to the previous one through cryptographic hashes, creating an unbreakable chain of records.</p>
+            <p><strong>Verification:</strong> Our system continuously verifies the integrity of the blockchain to ensure no tampering has occurred.</p>
+            <p><strong>Smart Contracts:</strong> Orders are processed through automated smart contracts that validate payment, delivery, and order details before recording.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .order-card {
+        transition: transform 0.2s ease;
+    }
+    
+    .order-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+        .secure-orders-page .orders-list .order-card > div:first-child {
+            flex-direction: column;
+        }
+        
+        .secure-orders-page .orders-list .order-card > div:last-child > div {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+

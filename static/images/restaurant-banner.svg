@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300">
+  <defs>
+    <linearGradient id="bannerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0b1a"/>
+      <stop offset="100%" stop-color="#2a103b"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="300" fill="url(#bannerGrad)"/>
+  <g opacity="0.35" stroke="#8B5FBF" stroke-width="2">
+    <path d="M0 220 C100 260 200 200 300 230 C400 260 500 210 600 240" fill="none"/>
+    <path d="M0 180 C120 210 240 150 360 200 C480 240 540 160 600 180" fill="none"/>
+  </g>
+  <text x="50%" y="55%" text-anchor="middle" fill="#ffffff" font-size="42" font-family="Georgia, serif">
+    The Villain Experience
+  </text>
+  <text x="50%" y="70%" text-anchor="middle" fill="#c7b7ff" font-size="20" font-family="Arial, sans-serif">
+    Dark kitchens • Bold flavours • AI-crafted menus
+  </text>
+</svg>
+

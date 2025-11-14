@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Orders - The Villain Food-App{% endblock %}
+
+{% block content %}
+<div class="restaurant-orders" style="max-width: 1200px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--text-light); margin-bottom: 0.5rem;">Orders Management</h1>
+        <p style="color: var(--text-gray);">Manage and process incoming orders</p>
+    </div>
+
+    {% if not restaurant %}
+    <div style="background: var(--card-bg); padding: 3rem; border-radius: var(--border-radius); text-align: center;">
+        <i class="fas fa-store-slash" style="font-size: 4rem; color: var(--text-gray); margin-bottom: 1rem;"></i>
+        <h3 style="color: var(--text-light); margin-bottom: 1rem;">No Restaurant Found</h3>
+        <p style="color: var(--text-gray);">You need to register a restaurant to view orders.</p>
+    </div>
+    {% else %}
+    <!-- Orders Filter -->
+    <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 2rem;">
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <span style="color: var(--text-light); font-weight: 500;">Filter:</span>
+            <button class="filter-btn active" data-filter="all">All Orders</button>
+            <button class="filter-btn" data-filter="pending">Pending</button>
+            <button class="filter-btn" data-filter="confirmed">Confirmed</button>
+            <button class="filter-btn" data-filter="preparing">Preparing</button>
+            <button class="filter-btn" data-filter="ready">Ready</button>
+            <button class="filter-btn" data-filter="in_delivery">In Delivery</button>
+            <button class="filter-btn" data-filter="delivered">Delivered</button>
+        </div>
+    </div>
+
+    <!-- Orders List -->
+    <div class="orders-list">
+        {% if orders %}
+            {% for order in orders %}
+            <div class="order-card" data-status="{{ order.status }}" 
+                 style="background: var(--card-bg); border-radius: var(--border-radius); margin-bottom: 1.5rem; overflow: hidden;">
+                <!-- Order Header -->
+                <div style="padding: 1.5rem; border-bottom: 1px solid #444; display: flex; justify-content: between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h3 style="color: var(--text-light); margin: 0 0 0.5rem 0;">
+                            Order #{{ order.id }} - {{ order.customer_name }}
+                        </h3>
+                        <div style="display: flex; gap: 1rem; color: var(--text-gray); font-size: 0.9rem; flex-wrap: wrap;">
+                            <span>{{ order.created_at_human if order.created_at_human else (order.created_at|string if order.created_at else 'N/A') }}</span>
+                            <span>•</span>
+                            <span>Total: M{{ "%.2f"|format(order.total_amount) }}</span>
+                            {% if order.special_instructions %}
+                            <span>•</span>
+                            <span><i class="fas fa-sticky-note"></i> Has instructions</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span class="status-badge status-{{ order.status }}" 
+                              style="background: {% if order.status == 'delivered' %}#4CAF50{% elif order.status == 'pending' %}#FFA500{% elif order.status == 'cancelled' %}#FF4757{% else %}#8B5FBF{% endif %}; 
+                                     color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; text-transform: capitalize; font-weight: 500;">
+                            {{ order.status }}
+                        </span>
+                        
+                        <div class="order-actions" style="display: flex; gap: 0.5rem;">
+                            {% if order.status == 'pending' %}
+                            <button class="btn-primary" onclick="updateOrderStatus({{ order.id }}, 'confirmed')">
+                                Accept
+                            </button>
+                            <button class="btn-danger" onclick="updateOrderStatus({{ order.id }}, 'cancelled')">
+                                Reject
+                            </button>
+                            {% elif order.status == 'confirmed' %}
+                            <button class="btn-primary" onclick="updateOrderStatus({{ order.id }}, 'preparing')">
+                                Start Preparing
+                            </button>
+                            {% elif order.status == 'preparing' %}
+                            <button class="btn-primary" onclick="updateOrderStatus({{ order.id }}, 'ready')">
+                                Mark Ready
+                            </button>
+                            {% elif order.status == 'ready' %}
+                            <button class="btn-primary" onclick="updateOrderStatus({{ order.id }}, 'in_delivery')">
+                                Out for Delivery
+                            </button>
+                            {% elif order.status == 'in_delivery' %}
+                            <button class="btn-primary" onclick="updateOrderStatus({{ order.id }}, 'delivered')">
+                                Mark Delivered
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Details -->
+                <div style="padding: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+                        <!-- Order Items -->
+                        <div>
+                            <h4 style="color: var(--text-light); margin-bottom: 1rem;">Order Items</h4>
+                            
+                            <!-- Sample items - in real app, these would come from the database -->
+                            {% set sample_items = [
+                                {'name': 'Dark Knight Burger', 'quantity': 1, 'price': 12.99},
+                                {'name': 'Gothic Fries', 'quantity': 1, 'price': 4.99},
+                                {'name': 'Evil Shake', 'quantity': 1, 'price': 5.99}
+                            ] %}
+                            
+                            {% for item in sample_items %}
+                            <div style="display: flex; justify-content: between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #444;">
+                                <div style="color: var(--text-light);">
+                                    <span style="font-weight: 500;">{{ item.quantity }}x</span> {{ item.name }}
+                                </div>
+                                <div style="color: var(--primary-purple); font-weight: 500;">
+                                    M{{ "%.2f"|format(item.price * item.quantity) }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Order Info & Actions -->
+                        <div>
+                            <h4 style="color: var(--text-light); margin-bottom: 1rem;">Order Information</h4>
+                            
+                            <div style="color: var(--text-gray); margin-bottom: 1.5rem;">
+                                <p style="margin: 0.5rem 0;"><strong>Customer:</strong> {{ order.customer_name }}</p>
+                                <p style="margin: 0.5rem 0;"><strong>Delivery Address:</strong><br>{{ order.delivery_address or '123 Main Street' }}</p>
+                                {% if order.special_instructions %}
+                                <p style="margin: 0.5rem 0;"><strong>Instructions:</strong><br>{{ order.special_instructions }}</p>
+                                {% endif %}
+                                <p style="margin: 0.5rem 0;"><strong>Phone:</strong> {{ order.phone or 'Not provided' }}</p>
+                            </div>
+                            
+                            <!-- Status Timeline -->
+                            <div style="margin-top: 1.5rem;">
+                                <h5 style="color: var(--text-light); margin-bottom: 0.5rem;">Order Progress</h5>
+                                <div class="status-timeline">
+                                    {% set timeline = [
+                                        {'status': 'ordered', 'label': 'Ordered', 'active': true},
+                                        {'status': 'confirmed', 'label': 'Confirmed', 'active': order.status in ['confirmed', 'preparing', 'ready', 'in_delivery', 'delivered']},
+                                        {'status': 'preparing', 'label': 'Preparing', 'active': order.status in ['preparing', 'ready', 'in_delivery', 'delivered']},
+                                        {'status': 'ready', 'label': 'Ready', 'active': order.status in ['ready', 'in_delivery', 'delivered']},
+                                        {'status': 'in_delivery', 'label': 'In Delivery', 'active': order.status in ['in_delivery', 'delivered']},
+                                        {'status': 'delivered', 'label': 'Delivered', 'active': order.status == 'delivered'}
+                                    ] %}
+                                    
+                                    <div style="display: flex; justify-content: between; position: relative; margin-bottom: 0.5rem;">
+                                        {% for step in timeline %}
+                                        <div style="text-align: center; flex: 1; position: relative;">
+                                            <div style="width: 12px; height: 12px; background: {% if step.active %}var(--primary-purple){% else %}#444{% endif %}; 
+                                                 border-radius: 50%; margin: 0 auto; position: relative; z-index: 2;"></div>
+                                            {% if not loop.last %}
+                                            <div style="position: absolute; top: 5px; left: 50%; width: 100%; height: 2px; 
+                                                 background: {% if step.active %}var(--primary-purple){% else %}#444{% endif %}; z-index: 1;"></div>
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <div style="display: flex; justify-content: between; font-size: 0.7rem; color: var(--text-gray);">
+                                        {% for step in timeline %}
+                                        <span style="text-align: center; flex: 1;">{{ step.label }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Preparation Notes -->
+                    {% if order.status in ['preparing', 'ready'] %}
+                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #444;">
+                        <h4 style="color: var(--text-light); margin-bottom: 0.5rem;">Preparation Notes</h4>
+                        <textarea class="form-input" placeholder="Add internal notes about this order..." 
+                                  style="width: 100%; min-height: 60px; resize: vertical;"></textarea>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; padding: 3rem; color: var(--text-gray);">
+                <i class="fas fa-shopping-bag" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+                <h3>No Orders Yet</h3>
+                <p>When customers place orders, they will appear here</p>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .filter-btn {
+        background: transparent;
+        border: 1px solid #444;
+        color: var(--text-gray);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    .filter-btn:hover, .filter-btn.active {
+        background: var(--primary-purple);
+        border-color: var(--primary-purple);
+        color: white;
+    }
+    
+    .order-card {
+        transition: transform 0.2s ease;
+    }
+    
+    .order-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .status-timeline {
+        position: relative;
+    }
+    
+    @media (max-width: 768px) {
+        .order-card > div:last-child > div {
+            grid-template-columns: 1fr;
+        }
+        
+        .order-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .order-actions button {
+            width: 100%;
+        }
+    }
+</style>
+
+{% block scripts %}
+<script>
+    // Filter orders by status
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Update active state
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filter = this.getAttribute('data-filter');
+            const orderCards = document.querySelectorAll('.order-card');
+            
+            orderCards.forEach(card => {
+                if (filter === 'all' || card.getAttribute('data-status') === filter) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    function updateOrderStatus(orderId, newStatus) {
+        const statusMessages = {
+            'confirmed': 'Are you sure you want to accept this order?',
+            'cancelled': 'Are you sure you want to reject this order?',
+            'preparing': 'Start preparing this order?',
+            'ready': 'Mark this order as ready for delivery?',
+            'in_delivery': 'Mark this order as out for delivery?',
+            'delivered': 'Mark this order as delivered?'
+        };
+        
+        if (confirm(statusMessages[newStatus] || 'Update order status?')) {
+            showNotification('Updating order status...', 'info');
+            
+            // Simulate API call
+            setTimeout(() => {
+                showNotification(`Order status updated to ${newStatus}`, 'success');
+                // In a real app, you would update the UI without reloading
+                setTimeout(() => location.reload(), 1000);
+            }, 1500);
+        }
+    }
+    
+    // Initialize filters
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show all orders by default
+        document.querySelector('.filter-btn[data-filter="all"]').click();
+    });
+</script>
+{% endblock %}
+{% endblock %}

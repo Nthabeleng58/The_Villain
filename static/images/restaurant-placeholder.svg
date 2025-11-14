@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2b1b3f"/>
+      <stop offset="100%" stop-color="#120c1f"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="200" fill="url(#grad)" rx="16" ry="16"/>
+  <g fill="none" stroke="#8B5FBF" stroke-width="6">
+    <rect x="40" y="80" width="240" height="80" rx="12" ry="12"/>
+    <path d="M60 80 L100 40 L220 40 L260 80"/>
+  </g>
+  <text x="50%" y="60%" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="18">
+    Villain Kitchen
+  </text>
+</svg>
+
